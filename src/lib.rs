@@ -8,7 +8,7 @@
 //! If a feature is used enough to require extensive documentation it will likely be
 //! moved to another crate. Thus everything in here is unlikely to ever receive documentation,
 //! unless moved elsewhere.
-//! 
+//!
 //! # Stability
 //! The crate is also unlikely to be moved from `0.1.0`, with features added and removed without
 //! any version bump.
@@ -174,7 +174,7 @@ pub fn parse_from_file<
 #[derive(Debug, thiserror::Error)]
 pub enum WriteToFileError<E: fmt::Debug + error::Error + 'static> {
 	/// Unable to create file
-	#[error("Unable to crate file")]
+	#[error("Unable to create file")]
 	Create(#[source] io::Error),
 
 	/// Unable to write the file
