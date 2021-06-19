@@ -1,4 +1,18 @@
-//! Dcb utilities
+//! Utilities
+//!
+//! This crate is composed of random utilities I make whenever I'm generalizing a concept
+//! found elsewhere, or just need to share some code between two workspaces.
+//!
+//! # Documentation
+//! Documentation is pretty much nonexistent.
+//! If a feature is used enough to require extensive documentation it will likely be
+//! moved to another crate. Thus everything in here is unlikely to ever receive documentation,
+//! unless moved elsewhere.
+//! 
+//! # Stability
+//! The crate is also unlikely to be moved from `0.1.0`, with features added and removed without
+//! any version bump.
+
 // Features
 #![feature(
 	slice_index_methods,
