@@ -28,7 +28,8 @@
 	try_trait_v2,
 	never_type,
 	control_flow_enum,
-	unwrap_infallible
+	unwrap_infallible,
+	associated_type_bounds
 )]
 // Lints
 #![warn(clippy::restriction, clippy::pedantic, clippy::nursery)]
@@ -95,13 +96,13 @@ pub mod ascii_str_arr;
 #[cfg(feature = "gui")]
 pub mod ascii_text_buffer;
 pub mod bcd;
-pub mod btree_map_par_iter;
 pub mod btree_map_vector;
 pub mod cached_value;
 pub mod discarding_sorted_merge_iter;
 pub mod display_wrapper;
 pub mod family;
 pub mod io_slice;
+pub mod kv_par_iter;
 pub mod lock_poison;
 pub mod map_box;
 pub mod next_from_bytes;
@@ -119,13 +120,13 @@ pub use ascii_str_arr::AsciiStrArr;
 #[cfg(feature = "gui")]
 pub use ascii_text_buffer::AsciiTextBuffer;
 pub use bcd::BcdU8;
-pub use btree_map_par_iter::BTreeMapParIter;
 pub use btree_map_vector::BTreeMapVector;
 pub use cached_value::CachedValue;
 pub use discarding_sorted_merge_iter::DiscardingSortedMergeIter;
 pub use display_wrapper::DisplayWrapper;
 pub use family::{ResultFamily, Tuple2Family};
 pub use io_slice::IoSlice;
+pub use kv_par_iter::KVParIter;
 pub use lock_poison::{MutexPoison, RwLockPoison};
 pub use map_box::MapBoxResult;
 pub use next_from_bytes::NextFromBytes;

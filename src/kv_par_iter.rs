@@ -1,42 +1,53 @@
-//! [`BTreeMap`] parallel iterator
+//! Key-value parallel iterator
 
 // Imports
 use either::Either;
-use std::collections::{btree_map, BTreeMap};
 
+/// Iterator over two key-value pair iterators, providing either both values for
+/// an equal key, or just either side otherwise.
+pub struct KVParIter<L, R>
+where
+	L: Iterator<Item: KeyValue>,
+	R: Iterator<Item = L::Item>,
+{
+	/// Left iterator
+	left: L,
 
-/// Iterator over two `BTreeMap`, proving either one or both for each key, in ascending order
-// TODO: Generalize this to any two iterators?
-#[derive(Clone, Debug)]
-pub struct BTreeMapParIter<'a, K, VL, VR> {
-	/// Left map
-	left: btree_map::Iter<'a, K, VL>,
-
-	/// Right map
-	right: btree_map::Iter<'a, K, VR>,
+	/// Right iterator
+	right: R,
 
 	/// Currently cached value
-	value: Option<(&'a K, Either<&'a VL, &'a VR>)>,
+	// Option<L::Key, Either<L::Value, R::Value>>
+	#[allow(clippy::type_complexity)] // We can't easily simplify it
+	value: Option<(
+		<L::Item as KeyValue>::Key,
+		Either<<L::Item as KeyValue>::Value, <R::Item as KeyValue>::Value>,
+	)>,
 }
 
-impl<'a, K, VL, VR> BTreeMapParIter<'a, K, VL, VR> {
-	/// Creates a new iterator from two trees
+impl<L, R> KVParIter<L, R>
+where
+	L: Iterator,
+	L::Item: KeyValue,
+	R: Iterator<Item = L::Item>,
+{
+	/// Creates a new iterator
 	#[must_use]
-	pub fn new(left: &'a BTreeMap<K, VL>, right: &'a BTreeMap<K, VR>) -> Self {
+	pub fn new(left: impl IntoIterator<IntoIter = L>, right: impl IntoIterator<IntoIter = R>) -> Self {
 		Self {
-			left:  left.iter(),
-			right: right.iter(),
+			left:  left.into_iter(),
+			right: right.into_iter(),
 			value: None,
 		}
 	}
 
 	/// Returns the next left value
-	pub fn next_left(&mut self) -> Option<(&'a K, &'a VL)> {
+	pub fn next_left(&mut self) -> Option<L::Item> {
 		// Check if we have it cached
 		if let Some((key, value)) = self.value.take() {
 			match value {
 				// If we did, return it
-				Either::Left(value) => return Some((key, value)),
+				Either::Left(value) => return Some((key, value).into()),
 				// If it wasn't on the left, put it back
 				Either::Right(_) => self.value = Some((key, value)),
 			}
@@ -47,12 +58,12 @@ impl<'a, K, VL, VR> BTreeMapParIter<'a, K, VL, VR> {
 	}
 
 	/// Returns the next right value
-	pub fn next_right(&mut self) -> Option<(&'a K, &'a VR)> {
+	pub fn next_right(&mut self) -> Option<R::Item> {
 		// Check if we have it cached
 		if let Some((key, value)) = self.value.take() {
 			match value {
 				// If we did, return it
-				Either::Right(value) => return Some((key, value)),
+				Either::Right(value) => return Some((key, value).into()),
 				// If it wasn't on the right, put it back
 				Either::Left(_) => self.value = Some((key, value)),
 			}
@@ -63,14 +74,22 @@ impl<'a, K, VL, VR> BTreeMapParIter<'a, K, VL, VR> {
 	}
 }
 
-impl<'a, K, VL, VR> Iterator for BTreeMapParIter<'a, K, VL, VR>
+impl<L, R> Iterator for KVParIter<L, R>
 where
-	K: Ord,
+	L: Iterator,
+	L::Item: KeyValue,
+	<L::Item as KeyValue>::Key: Ord,
+	R: Iterator<Item = L::Item>,
 {
-	type Item = (&'a K, ParIterValue<'a, VL, VR>);
+	// Option<L::Key, ParIterValue<L::Value, R::Value>>
+	#[allow(clippy::type_complexity)] // We can't easily simplify it
+	type Item = (
+		<L::Item as KeyValue>::Key,
+		ParIterValue<<L::Item as KeyValue>::Value, <R::Item as KeyValue>::Value>,
+	);
 
 	fn next(&mut self) -> Option<Self::Item> {
-		match (self.next_left(), self.next_right()) {
+		match (self.next_left().map(Into::into), self.next_right().map(Into::into)) {
 			// If we only got one of each value, just return it
 			(Some((key, left)), None) => Some((key, ParIterValue::Left(left))),
 			(None, Some((key, right))) => Some((key, ParIterValue::Right(right))),
@@ -102,25 +121,41 @@ where
 
 /// Iterator value
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
-pub enum ParIterValue<'a, VL, VR> {
+pub enum ParIterValue<L, R> {
 	/// Only left
-	Left(&'a VL),
+	Left(L),
 
 	/// Only right
-	Right(&'a VR),
+	Right(R),
 
 	/// Both
-	Both(&'a VL, &'a VR),
+	Both(L, R),
 }
 
-impl<'a, VL, VR> ParIterValue<'a, VL, VR> {
+impl<L, R> ParIterValue<L, R> {
 	/// Returns a pair of options describing this value
 	#[must_use]
-	pub const fn into_opt_pair(self) -> (Option<&'a VL>, Option<&'a VR>) {
+	#[allow(clippy::missing_const_for_fn)] // False positive
+	pub fn into_opt_pair(self) -> (Option<L>, Option<R>) {
 		match self {
 			Self::Left(left) => (Some(left), None),
 			Self::Right(right) => (None, Some(right)),
 			Self::Both(left, right) => (Some(left), Some(right)),
 		}
 	}
+}
+
+
+/// Key-Value pair
+pub trait KeyValue: Into<(Self::Key, Self::Value)> + From<(Self::Key, Self::Value)> {
+	/// Key
+	type Key;
+
+	/// Value
+	type Value;
+}
+
+impl<K, V> KeyValue for (K, V) {
+	type Key = K;
+	type Value = V;
 }
