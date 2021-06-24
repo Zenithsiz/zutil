@@ -299,14 +299,25 @@ pub fn fmt_err_wrapper_owned<E: error::Error>(err: E) -> impl fmt::Display {
 	DisplayWrapper::new(move |f| self::fmt_err(&err, f))
 }
 
+// TODO: Rename both of these `try_*` to like `*_if_{not}_exists`.
 
 /// Attempts to create a folder. Returns `Ok` if it already exists.
 #[allow(clippy::create_dir)] // We only want to create a single level
 pub fn try_create_folder(path: impl AsRef<std::path::Path>) -> Result<(), std::io::Error> {
 	match std::fs::create_dir(&path) {
-		// If it already exists, ignore
 		Ok(_) => Ok(()),
+		// If it already exists, ignore
 		Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => Ok(()),
+		Err(err) => Err(err),
+	}
+}
+
+/// Attempts to remove a file. Returns `Ok` if it didn't exist.
+pub fn try_remove_file(path: impl AsRef<std::path::Path>) -> Result<(), std::io::Error> {
+	match std::fs::remove_file(&path) {
+		Ok(_) => Ok(()),
+		// If it didn't exist, ignore
+		Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(()),
 		Err(err) => Err(err),
 	}
 }
