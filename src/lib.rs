@@ -124,7 +124,7 @@ pub use btree_map_vector::BTreeMapVector;
 pub use cached_value::CachedValue;
 pub use discarding_sorted_merge_iter::DiscardingSortedMergeIter;
 pub use display_wrapper::DisplayWrapper;
-pub use family::ResultFamily;
+pub use family::{ResultFamily, Tuple2Family};
 pub use io_slice::IoSlice;
 pub use lock_poison::{MutexPoison, RwLockPoison};
 pub use map_box::MapBoxResult;
