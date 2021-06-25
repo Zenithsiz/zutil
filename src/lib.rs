@@ -144,13 +144,14 @@ pub use write_take::WriteTake;
 // Imports
 use std::{
 	collections::hash_map::DefaultHasher,
-	error, fmt, fs,
+	error, fmt,
 	hash::{Hash, Hasher},
-	io,
-	path::Path,
 };
+#[cfg(feature = "use_serde")]
+use std::{fs, io, path::Path};
 
 /// Error for [`parse_from_file`]
+#[cfg(feature = "use_serde")]
 #[derive(Debug, thiserror::Error)]
 pub enum ParseFromFileError<E: fmt::Debug + error::Error + 'static> {
 	/// Unable to open file
@@ -163,6 +164,7 @@ pub enum ParseFromFileError<E: fmt::Debug + error::Error + 'static> {
 }
 
 /// Opens and parses a value from a file
+#[cfg(feature = "use_serde")]
 pub fn parse_from_file<
 	'de,
 	T: serde::Deserialize<'de>,
@@ -176,6 +178,7 @@ pub fn parse_from_file<
 }
 
 /// Error for [`write_to_file`]
+#[cfg(feature = "use_serde")]
 #[derive(Debug, thiserror::Error)]
 pub enum WriteToFileError<E: fmt::Debug + error::Error + 'static> {
 	/// Unable to create file
@@ -188,6 +191,7 @@ pub enum WriteToFileError<E: fmt::Debug + error::Error + 'static> {
 }
 
 /// Creates and writes a value to a file
+#[cfg(feature = "use_serde")]
 pub fn write_to_file<T: serde::Serialize, E: fmt::Debug + error::Error + 'static, P: ?Sized + AsRef<Path>>(
 	path: &P, value: &T, writer: fn(fs::File, &T) -> Result<(), E>,
 ) -> Result<(), WriteToFileError<E>> {

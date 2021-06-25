@@ -15,7 +15,7 @@ sealed = "0.3.0"
 derive_more = "0.99.14"
 
 # Serde
-serde = { version = "1.0.120", features = ["derive"] }
+serde = { version = "1.0.120", features = ["derive"], optional = true }
 
 # Derives
 thiserror = "1.0.23"
@@ -38,3 +38,4 @@ native-dialog = { version = "0.5.5", optional = true }
 [features]
 gui = ["eframe"]
 alert = ["native-dialog"]
+use_serde = ["serde"]

@@ -2,6 +2,7 @@
 
 // Modules
 mod error;
+#[cfg(feature = "use_serde")]
 mod visitor;
 
 // Exports
@@ -18,6 +19,7 @@ use std::{
 	ops::{self, Range},
 	slice::SliceIndex,
 };
+#[cfg(feature = "use_serde")]
 use visitor::DeserializerVisitor;
 
 /// An ascii string backed by an array
@@ -322,6 +324,7 @@ impl<const N: usize> fmt::Display for AsciiStrArr<N> {
 	}
 }
 
+#[cfg(feature = "use_serde")]
 impl<'de, const N: usize> serde::Deserialize<'de> for AsciiStrArr<N> {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 	where
@@ -331,6 +334,7 @@ impl<'de, const N: usize> serde::Deserialize<'de> for AsciiStrArr<N> {
 	}
 }
 
+#[cfg(feature = "use_serde")]
 impl<const N: usize> serde::Serialize for AsciiStrArr<N> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
