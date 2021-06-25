@@ -110,6 +110,7 @@ pub mod next_from_bytes;
 pub mod null_ascii_string;
 pub mod signed_hex;
 pub mod string_contains_case_insensitive;
+#[cfg(feature = "use_futures")]
 pub mod task;
 pub mod try_into_as;
 pub mod try_or_empty;
