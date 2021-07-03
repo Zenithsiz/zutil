@@ -81,13 +81,22 @@ impl<T, F> CachedValue<T, F> {
 		F: Fn<Args>,
 		F2: FnOnce<Args, Output = T>,
 	{
+		Self::try_new_or_update(this, args, FnResultWrapper(f)).into_ok()
+	}
+
+	/// Tries to create or updates a cached value
+	pub fn try_new_or_update<Args: Hash, E, F2>(this: &mut Option<Self>, args: Args, f: F2) -> Result<&mut Self, E>
+	where
+		F: Fn<Args>,
+		F2: FnOnce<Args, Output = Result<T, E>>,
+	{
 		// Note: Checking first saves a hash check on `Self::update`
 		match this {
 			Some(this) => {
-				Self::update(this, args, f);
-				this
+				Self::try_update(this, args, f)?;
+				Ok(this)
 			},
-			None => this.insert(Self::new(args, f)),
+			None => Self::try_new(args, f).map(move |value| this.insert(value)),
 		}
 	}
 }
