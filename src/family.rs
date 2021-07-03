@@ -31,3 +31,18 @@ impl<A, B> Tuple2Family for (A, B) {
 	type A = A;
 	type B = B;
 }
+
+/// Slice family
+#[sealed::sealed]
+pub trait SliceFamily
+where
+	for<'a> &'a Self: From<&'a [Self::Value]> + Into<&'a [Self::Value]>,
+{
+	/// Value of each element
+	type Value;
+}
+
+#[sealed::sealed]
+impl<T> SliceFamily for [T] {
+	type Value = T;
+}
