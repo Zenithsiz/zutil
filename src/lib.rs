@@ -335,3 +335,10 @@ pub fn hash_of<T: Hash>(value: &T) -> u64 {
 	value.hash(&mut state);
 	state.finish()
 }
+
+/// Helper for [`DisplayWrapper`] to create it out of a formatting string
+pub macro display_wrapper( $( $args:tt )* ) {
+	$crate::DisplayWrapper::new(|f| {
+		write!(f, $( $args )*)
+	})
+}
