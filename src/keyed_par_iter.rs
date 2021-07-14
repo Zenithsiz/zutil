@@ -124,8 +124,45 @@ impl<L, R> ParIterValue<L, R> {
 			Self::Both(left, right) => (Some(left), Some(right)),
 		}
 	}
+
+	/// Returns the key of this value
+	///
+	/// Note: When this value is [`Self::Both`], returns the left key
+	pub fn key(&self) -> &L::Key
+	where
+		L: Keyed,
+		R: Keyed<Key = L::Key>,
+	{
+		match self {
+			Self::Left(value) | Self::Both(value, _) => value.key(),
+			Self::Right(value) => value.key(),
+		}
+	}
+
+	/// Maps both possible values of this value
+	pub fn map<L2, R2>(self, lhs: impl FnOnce(L) -> L2, rhs: impl FnOnce(R) -> R2) -> ParIterValue<L2, R2> {
+		match self {
+			Self::Left(left) => ParIterValue::Left(lhs(left)),
+			Self::Right(right) => ParIterValue::Right(rhs(right)),
+			Self::Both(left, right) => ParIterValue::Both(lhs(left), rhs(right)),
+		}
+	}
 }
 
+impl<K, L, R> ParIterValue<(K, L), (K, R)> {
+	/// Splits the key and value off of this value
+	///
+	///
+	/// Note: When this value is [`Self::Both`], returns the left key
+	#[allow(clippy::missing_const_for_fn)] // False positive
+	pub fn key_value(self) -> (K, ParIterValue<L, R>) {
+		match self {
+			ParIterValue::Left((key, left)) => (key, ParIterValue::Left(left)),
+			ParIterValue::Right((key, right)) => (key, ParIterValue::Right(right)),
+			ParIterValue::Both((key, left), (_, right)) => (key, ParIterValue::Both(left, right)),
+		}
+	}
+}
 
 /// Keyed value
 pub trait Keyed {
