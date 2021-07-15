@@ -191,6 +191,19 @@ impl<const N: usize> AsciiStrArr<N> {
 		}
 	}
 
+	/// Pushes a string onto this string, if there is enough space
+	#[allow(clippy::result_unit_err)] // TODO: An error type for this?
+	pub fn push_str(&mut self, s: &AsciiStr) -> Result<(), ()> {
+		match self.len + s.len() > N {
+			true => Err(()),
+			false => {
+				self.chars[self.len..(self.len + s.len())].copy_from_slice(s.as_slice());
+				self.len += s.len();
+				Ok(())
+			},
+		}
+	}
+
 	/// Inserts a character onto the string, if there is enough space
 	///
 	/// # Panics
