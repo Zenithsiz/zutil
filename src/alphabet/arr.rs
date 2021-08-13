@@ -25,13 +25,17 @@ impl<A: Alphabet, const N: usize> StrArrAlphabet<A, N> {
 		let valid_bytes = A::validate(bytes).map_err(FromBytesError::Validate)?;
 
 		// Try to copy the bytes over
+		let len = valid_bytes.len();
 		let mut bytes = [0; N];
-		bytes.copy_from_slice(valid_bytes.get(..N).ok_or(FromBytesError::TooLong)?);
+		bytes
+			.get_mut(..len)
+			.ok_or(FromBytesError::TooLong)?
+			.copy_from_slice(valid_bytes);
 
 		Ok(Self {
 			phantom: PhantomData,
 			bytes,
-			len: valid_bytes.len(),
+			len,
 		})
 	}
 
