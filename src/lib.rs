@@ -344,3 +344,35 @@ pub macro display_wrapper( $( $args:tt )* ) {
 		write!(f, $( $args )*)
 	})
 }
+
+/// Reads into a slice until eof.
+///
+/// Returns the remaining non-filled buffer.
+// Note: Based on the `default_read_exact` function in `std`.
+pub fn read_slice_until_eof<'a, R: io::Read + ?Sized>(
+	reader: &mut R, mut buffer: &'a mut [u8],
+) -> Result<&'a mut [u8], ReadSliceUntilEofError> {
+	loop {
+		match reader.read(buffer) {
+			Ok(0) => return Ok(buffer),
+			Ok(n) => match buffer.get_mut(n..) {
+				Some(new_buf) => buffer = new_buf,
+				None => return Err(ReadSliceUntilEofError::FilledBuffer),
+			},
+			Err(e) if e.kind() == io::ErrorKind::Interrupted => (),
+			Err(e) => return Err(ReadSliceUntilEofError::Io(e)),
+		}
+	}
+}
+
+/// Error for [`read_slice_until_eof`]
+#[derive(Debug, thiserror::Error)]
+pub enum ReadSliceUntilEofError {
+	/// Io
+	#[error(transparent)]
+	Io(io::Error),
+
+	/// Filled the whole buffer before eof.
+	#[error("Filled the whole buffer before eof")]
+	FilledBuffer,
+}
