@@ -150,8 +150,9 @@ use std::{
 	error, fmt,
 	hash::{Hash, Hasher},
 };
+use std::io;
 #[cfg(feature = "use_serde")]
-use std::{fs, io, path::Path};
+use std::{fs, path::Path};
 
 /// Error for [`parse_from_file`]
 #[cfg(feature = "use_serde")]
