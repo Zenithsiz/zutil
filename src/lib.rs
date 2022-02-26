@@ -16,7 +16,6 @@
 // Features
 #![feature(
 	slice_index_methods,
-	format_args_capture,
 	seek_stream_len,
 	unboxed_closures,
 	fn_traits,
@@ -149,8 +148,8 @@ use std::{
 	collections::hash_map::DefaultHasher,
 	error, fmt,
 	hash::{Hash, Hasher},
+	io,
 };
-use std::io;
 #[cfg(feature = "use_serde")]
 use std::{fs, path::Path};
 
@@ -339,6 +338,20 @@ pub fn hash_of<T: Hash>(value: &T) -> u64 {
 	state.finish()
 }
 
+/// Helper to read an array of bytes from a reader
+pub trait ReadByteArray {
+	/// Reads a byte array, `[u8; N]` from this reader
+	fn read_byte_array<const N: usize>(&mut self) -> Result<[u8; N], std::io::Error>;
+}
+
+impl<R: ?Sized + std::io::Read> ReadByteArray for R {
+	fn read_byte_array<const N: usize>(&mut self) -> Result<[u8; N], std::io::Error> {
+		let mut bytes = [0; N];
+		self.read_exact(&mut bytes)?;
+		Ok(bytes)
+	}
+}
+
 /// Helper for [`DisplayWrapper`] to create it out of a formatting string
 pub macro display_wrapper( $( $args:tt )* ) {
 	$crate::DisplayWrapper::new(|f| {
@@ -376,4 +389,13 @@ pub enum ReadSliceUntilEofError {
 	/// Filled the whole buffer before eof.
 	#[error("Filled the whole buffer before eof")]
 	FilledBuffer,
+}
+
+/// Sign extends a `u{N}` to a `u128`
+pub fn sign_extend_un(value: u128, n: usize) -> u128 {
+	// Shift to left so that msb of `u{N}` is at msb of `u128`.
+	let shifted = (value << (128 - n)) as i128;
+
+	// Then shift back, and all bits will be 1 if negative, else 0
+	(shifted >> (128 - n)) as u128
 }
