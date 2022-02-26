@@ -46,3 +46,13 @@ impl<T: Write> Write for WriteTake<T> {
 		self.inner.flush()
 	}
 }
+
+/// Extension trait for [`WriteTake`]
+pub trait WriteTakeExt: Sized {
+	/// Creates a [`WriteTake`] to limit the number of bytes written
+	fn take(self, limit: u64) -> WriteTake<Self> {
+		WriteTake::new(self, limit)
+	}
+}
+
+impl<W: Write> WriteTakeExt for W {}
