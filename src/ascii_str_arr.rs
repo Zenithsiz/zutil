@@ -74,6 +74,13 @@ impl<const N: usize> AsciiStrArr<N> {
 			self.len -= 1;
 		}
 	}
+
+	/// Returns a string, trimmed of `ch` on the end
+	#[must_use]
+	pub fn trimmed_end(mut self, ch: AsciiChar) -> Self {
+		self.trim_end(ch);
+		self
+	}
 }
 
 /// Conversions to other string types
@@ -231,6 +238,15 @@ impl<const N: usize> AsciiStrArr<N> {
 		self.chars.copy_within(range.end..self.len, range.start);
 		self.len -= range.end - range.start;
 	}
+
+	/// Replaces all instances of a character with another
+	pub fn replace_inplace(&mut self, from: AsciiChar, to: AsciiChar) {
+		for ch in &mut self.chars[..self.len] {
+			if *ch == from {
+				*ch = to;
+			}
+		}
+	}
 }
 
 impl<const N: usize> AsRef<AsciiStr> for AsciiStrArr<N> {
@@ -279,6 +295,12 @@ impl<const N: usize> PartialEq for AsciiStrArr<N> {
 }
 
 impl<const N: usize> Eq for AsciiStrArr<N> {}
+
+impl<const N: usize> PartialEq<str> for AsciiStrArr<N> {
+	fn eq(&self, other: &str) -> bool {
+		self.as_str() == other
+	}
+}
 
 impl<const N: usize> PartialOrd for AsciiStrArr<N> {
 	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
