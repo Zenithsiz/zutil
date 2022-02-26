@@ -1,7 +1,7 @@
 //! `BTreeMap<K, Vec<V>>`.
 
 // Imports
-use std::{borrow::Borrow, collections::BTreeMap, ops::RangeBounds};
+use std::{borrow::Borrow, collections::BTreeMap, iter::FromIterator, ops::RangeBounds};
 
 
 /// A b-tree map with `Vec<V>` values, sorted by
@@ -38,14 +38,28 @@ impl<K, V> BTreeMapVector<K, V> {
 	pub fn insert(&mut self, key: K, value: V)
 	where
 		K: Ord,
+		V: Ord,
 	{
 		let values = self.map.entry(key).or_default();
 		values.push(value);
+		values.sort_unstable(); // TODO: Not sort on every insert
 	}
 }
 
 impl<K: Ord, V> Default for BTreeMapVector<K, V> {
 	fn default() -> Self {
 		Self::new()
+	}
+}
+
+impl<K: Ord, V: Ord> FromIterator<(K, V)> for BTreeMapVector<K, V> {
+	fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
+		let mut map = BTreeMapVector::new();
+
+		for (key, value) in iter {
+			map.insert(key, value);
+		}
+
+		map
 	}
 }
