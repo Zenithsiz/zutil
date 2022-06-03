@@ -108,6 +108,7 @@ pub mod lock_poison;
 pub mod map_box;
 pub mod next_from_bytes;
 pub mod null_ascii_string;
+//pub mod ok_or_return;
 pub mod signed_hex;
 pub mod string_contains_case_insensitive;
 #[cfg(feature = "use_futures")]
@@ -136,6 +137,7 @@ pub use lock_poison::{MutexPoison, RwLockPoison};
 pub use map_box::MapBoxResult;
 pub use next_from_bytes::NextFromBytes;
 pub use null_ascii_string::NullAsciiString;
+//pub use ok_or_return::{OkOrReturn, OkOrReturnResidual, OkOrReturnResult};
 pub use signed_hex::SignedHex;
 pub use string_contains_case_insensitive::StrContainsCaseInsensitive;
 pub use try_into_as::TryIntoAs;
@@ -310,10 +312,11 @@ pub fn fmt_err_wrapper_owned<E: error::Error>(err: E) -> impl fmt::Display {
 
 // TODO: Rename both of these `try_*` to like `*_if_{not}_exists`.
 
-/// Attempts to create a folder. Returns `Ok` if it already exists.
-#[allow(clippy::create_dir)] // We only want to create a single level
-pub fn try_create_folder(path: impl AsRef<std::path::Path>) -> Result<(), std::io::Error> {
-	match std::fs::create_dir(&path) {
+/// Attempts to, recursively, create a directory.
+///
+/// Returns `Ok` if it already exists
+pub fn try_create_dir_all(path: impl AsRef<std::path::Path>) -> Result<(), std::io::Error> {
+	match std::fs::create_dir_all(&path) {
 		Ok(_) => Ok(()),
 		// If it already exists, ignore
 		Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => Ok(()),
