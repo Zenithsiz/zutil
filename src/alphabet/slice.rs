@@ -2,9 +2,8 @@
 
 // Imports
 use super::Alphabet;
-use core::str::lossy::Utf8Lossy;
 use ref_cast::RefCast;
-use std::{fmt, marker::PhantomData};
+use std::{fmt, marker::PhantomData, borrow::Cow};
 
 /// An alphabetic string slice
 // TODO: Not expose `ref_cast` to the outside, as it breaks
@@ -42,8 +41,8 @@ impl<A: Alphabet> StrAlphabet<A> {
 
 	/// Returns this string as a lossy `str`
 	#[must_use]
-	pub fn as_lossy_str(&self) -> &Utf8Lossy {
-		Utf8Lossy::from_bytes(self.as_bytes())
+	pub fn as_lossy_str(&self) -> Cow<'_, str> {
+		String::from_utf8_lossy(self.as_bytes())
 	}
 
 	/// Returns the length of this string
