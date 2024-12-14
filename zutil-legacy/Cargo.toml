@@ -6,32 +6,19 @@ version = "0.1.0"
 
 [dependencies]
 
-# Util
-arrayref = "0.3.6"
-ascii = { version = "1.0.0" }
-derive_more = "0.99.14"
-either = "1.6.1"
-int-conv = "0.1.4"
-sealed = "0.3.0"
-
-# Serde
-serde = { version = "1.0.120", features = ["derive"], optional = true }
-
-# Derives
-ref-cast = "1.0.6"
-thiserror = "1.0.23"
-
-# Futures
-futures = { version = "0.3.15", optional = true }
-
-# Logging
-log = "0.4.14"
-
-# Gui
-eframe = { git = "https://github.com/emilk/egui", rev = "7c5a2d60", optional = true }
-
-# Alert
-native-dialog = { version = "0.5.5", optional = true }
+arrayref = { workspace = true }
+ascii = { workspace = true }
+derive_more = { workspace = true }
+eframe = { workspace = true, optional = true }
+either = { workspace = true }
+futures = { workspace = true, optional = true }
+int-conv = { workspace = true }
+log = { workspace = true }
+native-dialog = { workspace = true, optional = true }
+ref-cast = { workspace = true }
+sealed = { workspace = true }
+serde = { workspace = true, features = ["derive"], optional = true }
+thiserror = { workspace = true }
 
 [features]
 alert = ["native-dialog"]
