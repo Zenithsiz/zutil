@@ -22,7 +22,7 @@ impl<T, E, U, I: Iterator<Item = Result<T, E>>, F: FnMut(T) -> Result<U, E>> Ite
 }
 
 /// Extension trait for [`TryMapOk`]
-trait TryMapOkIter<T, E>: Iterator<Item = Result<T, E>> + Sized {
+pub trait TryMapOkIter<T, E>: Iterator<Item = Result<T, E>> + Sized {
 	/// Creates a [`TryMapOk`] from this iterator
 	fn try_map_ok<F, U>(self, f: F) -> TryMapOk<Self, F>
 	where
@@ -53,7 +53,7 @@ impl<T, E, E2, I: Iterator<Item = Result<T, E>>, F: FnMut(E) -> E2> Iterator for
 }
 
 /// Extension trait for [`MapErr`]
-trait MapErrIter<T, E>: Iterator<Item = Result<T, E>> + Sized {
+pub trait MapErrIter<T, E>: Iterator<Item = Result<T, E>> + Sized {
 	/// Creates a [`MapErr`] from this iterator
 	fn map_err<F, E2>(self, f: F) -> MapErr<Self, F>
 	where

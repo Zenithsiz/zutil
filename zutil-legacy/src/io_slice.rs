@@ -94,8 +94,13 @@ impl<T: Seek> IoSlice<T> {
 	}
 
 	/// Returns the len of this slice
-	pub fn len(&mut self) -> u64 {
+	pub fn len(&self) -> u64 {
 		self.end_pos.saturating_sub(self.start_pos)
+	}
+
+	/// Returns if this slice is empty
+	pub fn is_empty(&self) -> bool {
+		self.len() == 0
 	}
 
 	/// Returns the current position of the slice
@@ -240,7 +245,7 @@ impl<'a, T> Seek for &'a IoSlice<T>
 where
 	for<'b> &'b mut &'a T: Seek,
 {
-	fn seek<'b>(&'b mut self, pos: SeekFrom) -> io::Result<u64> {
+	fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
 		self::exec_as_ref_ref_mut(self, |mut slice| slice.seek(pos))
 	}
 

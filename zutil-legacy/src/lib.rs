@@ -20,14 +20,11 @@
 	unboxed_closures,
 	fn_traits,
 	decl_macro,
-	array_methods,
 	auto_traits,
 	negative_impls,
 	try_trait_v2,
 	never_type,
-	control_flow_enum,
 	unwrap_infallible,
-	associated_type_bounds,
 	tuple_trait
 )]
 

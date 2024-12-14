@@ -12,7 +12,7 @@ use std::fmt;
 pub struct SignedHex<T>(pub T);
 
 // All references implement it for their underlying type.
-impl<'a, T> fmt::Display for SignedHex<&'a T>
+impl<T> fmt::Display for SignedHex<&T>
 where
 	SignedHex<T>: fmt::Display,
 {

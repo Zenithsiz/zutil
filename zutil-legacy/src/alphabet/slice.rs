@@ -3,7 +3,7 @@
 // Imports
 use super::Alphabet;
 use ref_cast::RefCast;
-use std::{fmt, marker::PhantomData, borrow::Cow};
+use std::{borrow::Cow, fmt, marker::PhantomData};
 
 /// An alphabetic string slice
 // TODO: Not expose `ref_cast` to the outside, as it breaks
@@ -28,7 +28,7 @@ impl<A: Alphabet> StrAlphabet<A> {
 
 	/// Parses a string from bytes
 	pub fn from_bytes(bytes: &[u8]) -> Result<&Self, A::Error> {
-		A::validate(bytes).map(|bytes| Self::ref_cast(bytes))
+		A::validate(bytes).map(Self::ref_cast)
 	}
 
 	/// Writes this string to bytes
