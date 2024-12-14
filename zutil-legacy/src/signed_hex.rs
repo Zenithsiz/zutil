@@ -2,9 +2,7 @@
 // TODO: Improve this module overall.
 
 // Imports
-use int_conv::Extended;
-use ref_cast::RefCast;
-use std::fmt;
+use {int_conv::Extended, ref_cast::RefCast, std::fmt};
 
 /// A signed numeric type that uses signed hexadecimal formatting.
 #[derive(ref_cast::RefCast)]

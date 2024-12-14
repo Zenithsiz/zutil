@@ -11,15 +11,17 @@
 #![feature(async_closure, async_fn_traits, impl_trait_in_assoc_type)]
 
 // Imports
-use parking_lot::{ArcMutexGuard, Mutex};
-use std::{
-	fmt,
-	future::{Future, IntoFuture},
-	ops::AsyncFnOnce,
-	sync::Arc,
+use {
+	parking_lot::{ArcMutexGuard, Mutex},
+	std::{
+		fmt,
+		future::{Future, IntoFuture},
+		ops::AsyncFnOnce,
+		sync::Arc,
+	},
+	tokio::{sync::Notify, task},
+	zutil_app_error::{AppError, app_error},
 };
-use tokio::{sync::Notify, task};
-use zutil_app_error::{AppError, app_error};
 
 /// Inner
 struct Inner<T, P> {
@@ -251,12 +253,11 @@ where
 		async move {
 			// Get the lock to inner
 			let inner = match self.inner {
-				LoaderHandleInner::Task(join_handle) => {
+				LoaderHandleInner::Task(join_handle) =>
 					join_handle.await.map_err(|err| match err.try_into_panic() {
 						Ok(err) => app_error!("Loader panicked: {err:?}"),
 						Err(err) => AppError::new(&err).context("Loader was cancelled"),
-					})?
-				},
+					})?,
 				LoaderHandleInner::Loaded(inner) => inner,
 			};
 

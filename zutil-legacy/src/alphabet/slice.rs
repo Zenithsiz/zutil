@@ -1,9 +1,11 @@
 //! String slice
 
 // Imports
-use super::Alphabet;
-use ref_cast::RefCast;
-use std::{borrow::Cow, fmt, marker::PhantomData};
+use {
+	super::Alphabet,
+	ref_cast::RefCast,
+	std::{borrow::Cow, fmt, marker::PhantomData},
+};
 
 /// An alphabetic string slice
 // TODO: Not expose `ref_cast` to the outside, as it breaks

@@ -7,8 +7,7 @@ mod error;
 pub use error::ReadError;
 
 // Imports
-use crate::AsciiStrArr;
-use std::convert::TryInto;
+use {crate::AsciiStrArr, std::convert::TryInto};
 
 /// Trait for reading null terminated ascii strings from a buffer
 pub trait NullAsciiString<const N: usize> {

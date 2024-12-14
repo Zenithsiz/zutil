@@ -61,36 +61,39 @@ pub mod void;
 pub mod write_take;
 
 // Exports
-pub use alphabet::{Alphabet, StrAlphabet, StrArrAlphabet, StringAlphabet};
-pub use ascii_str_arr::AsciiStrArr;
 #[cfg(feature = "gui")]
 pub use ascii_text_buffer::AsciiTextBuffer;
-pub use bcd::BcdU8;
-pub use btree_map_vector::BTreeMapVector;
-pub use cached_value::CachedValue;
-pub use discarding_sorted_merge_iter::DiscardingSortedMergeIter;
-pub use display_wrapper::DisplayWrapper;
-pub use family::{ResultFamily, Tuple2Family};
-pub use file_lock::FileLock;
-pub use io_slice::IoSlice;
-pub use iter::{IterLen, MapErr, TryMapOk};
-pub use keyed_par_iter::KeyedParIter;
-pub use lock_poison::{MutexPoison, RwLockPoison};
-pub use map_box::MapBoxResult;
-pub use next_from_bytes::NextFromBytes;
-pub use null_ascii_string::NullAsciiString;
+pub use {
+	alphabet::{Alphabet, StrAlphabet, StrArrAlphabet, StringAlphabet},
+	ascii_str_arr::AsciiStrArr,
+	bcd::BcdU8,
+	btree_map_vector::BTreeMapVector,
+	cached_value::CachedValue,
+	discarding_sorted_merge_iter::DiscardingSortedMergeIter,
+	display_wrapper::DisplayWrapper,
+	family::{ResultFamily, Tuple2Family},
+	file_lock::FileLock,
+	io_slice::IoSlice,
+	iter::{IterLen, MapErr, TryMapOk},
+	keyed_par_iter::KeyedParIter,
+	lock_poison::{MutexPoison, RwLockPoison},
+	map_box::MapBoxResult,
+	next_from_bytes::NextFromBytes,
+	null_ascii_string::NullAsciiString,
+	signed_hex::SignedHex,
+	string_contains_case_insensitive::StrContainsCaseInsensitive,
+	try_into_as::TryIntoAs,
+	try_or_empty::TryOrEmpty,
+	void::Void,
+	write_take::WriteTake,
+};
 //pub use ok_or_return::{OkOrReturn, OkOrReturnResidual, OkOrReturnResult};
-pub use signed_hex::SignedHex;
-pub use string_contains_case_insensitive::StrContainsCaseInsensitive;
-pub use try_into_as::TryIntoAs;
-pub use try_or_empty::TryOrEmpty;
-pub use void::Void;
-pub use write_take::WriteTake;
 
 // Imports
 use std::{
 	collections::hash_map::DefaultHasher,
-	error, fmt,
+	error,
+	fmt,
 	hash::{Hash, Hasher},
 	io,
 };
@@ -118,7 +121,8 @@ pub fn parse_from_file<
 	E: fmt::Debug + error::Error + 'static,
 	P: ?Sized + AsRef<Path>,
 >(
-	path: &P, parser: fn(fs::File) -> Result<T, E>,
+	path: &P,
+	parser: fn(fs::File) -> Result<T, E>,
 ) -> Result<T, ParseFromFileError<E>> {
 	let file = fs::File::open(path).map_err(ParseFromFileError::Open)?;
 	parser(file).map_err(ParseFromFileError::Parse)
@@ -140,7 +144,9 @@ pub enum WriteToFileError<E: fmt::Debug + error::Error + 'static> {
 /// Creates and writes a value to a file
 #[cfg(feature = "use_serde")]
 pub fn write_to_file<T: serde::Serialize, E: fmt::Debug + error::Error + 'static, P: ?Sized + AsRef<Path>>(
-	path: &P, value: &T, writer: fn(fs::File, &T) -> Result<(), E>,
+	path: &P,
+	value: &T,
+	writer: fn(fs::File, &T) -> Result<(), E>,
 ) -> Result<(), WriteToFileError<E>> {
 	let file = fs::File::create(path).map_err(WriteToFileError::Create)?;
 	writer(file, value).map_err(WriteToFileError::Write)
@@ -309,7 +315,8 @@ pub macro display_wrapper( $( $args:tt )* ) {
 /// Returns the remaining non-filled buffer.
 // Note: Based on the `default_read_exact` function in `std`.
 pub fn read_slice_until_eof<'a, R: io::Read + ?Sized>(
-	reader: &mut R, mut buffer: &'a mut [u8],
+	reader: &mut R,
+	mut buffer: &'a mut [u8],
 ) -> Result<&'a mut [u8], ReadSliceUntilEofError> {
 	loop {
 		match reader.read(buffer) {

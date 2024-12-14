@@ -1,8 +1,10 @@
 //! String
 
 // Imports
-use super::{Alphabet, StrAlphabet};
-use std::{fmt, marker::PhantomData, ops::Deref};
+use {
+	super::{Alphabet, StrAlphabet},
+	std::{fmt, marker::PhantomData, ops::Deref},
+};
 
 /// An alphabetic owned string
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]

@@ -6,21 +6,25 @@ mod error;
 mod visitor;
 
 // Exports
-pub use ascii::AsciiChar;
-pub use error::{FromBytesError, FromUtf8Error, NotAsciiError, TooLongError};
+pub use {
+	ascii::AsciiChar,
+	error::{FromBytesError, FromUtf8Error, NotAsciiError, TooLongError},
+};
 
 // Imports
-use ascii::AsciiStr;
-use std::{
-	cmp::Ordering,
-	convert::TryFrom,
-	fmt,
-	hash::Hash,
-	ops::{self, Range},
-	slice::SliceIndex,
-};
 #[cfg(feature = "use_serde")]
 use visitor::DeserializerVisitor;
+use {
+	ascii::AsciiStr,
+	std::{
+		cmp::Ordering,
+		convert::TryFrom,
+		fmt,
+		hash::Hash,
+		ops::{self, Range},
+		slice::SliceIndex,
+	},
+};
 
 /// An ascii string backed by an array
 #[derive(Clone, Copy)]

@@ -90,7 +90,9 @@ impl<T, F> CachedValue<T, F> {
 
 	/// Tries to create or updates a cached value
 	pub fn try_new_or_update<Args: Tuple + Hash, E, F2>(
-		this: &mut Option<Self>, args: Args, f: F2,
+		this: &mut Option<Self>,
+		args: Args,
+		f: F2,
 	) -> Result<&mut Self, E>
 	where
 		F: Fn<Args>,

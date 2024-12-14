@@ -1,8 +1,7 @@
 //! Merging iterator
 
 // Imports
-use either::Either;
-use std::cmp::Ordering;
+use {either::Either, std::cmp::Ordering};
 
 /// Merging sorted iterator
 ///

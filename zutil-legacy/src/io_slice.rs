@@ -1,11 +1,13 @@
 //! Io slice
 
 // Imports
-use crate::write_take::WriteTakeExt;
-use std::{
-	convert::TryFrom,
-	io::{self, Read, Seek, SeekFrom, Write},
-	ops::{Bound, RangeBounds},
+use {
+	crate::write_take::WriteTakeExt,
+	std::{
+		convert::TryFrom,
+		io::{self, Read, Seek, SeekFrom, Write},
+		ops::{Bound, RangeBounds},
+	},
 };
 
 /// Io slice.
