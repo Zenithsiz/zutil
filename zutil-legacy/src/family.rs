@@ -1,7 +1,7 @@
 //! Type families
 
 /// Result family
-#[sealed::sealed]
+#[sealed::sealed(erase)]
 pub trait ResultFamily: Into<Result<Self::Ok, Self::Err>> + From<Result<Self::Ok, Self::Err>> {
 	/// Ok type
 	type Ok;
@@ -17,7 +17,7 @@ impl<T, E> ResultFamily for Result<T, E> {
 }
 
 /// Tuple 2 family
-#[sealed::sealed]
+#[sealed::sealed(erase)]
 pub trait Tuple2Family: Into<(Self::A, Self::B)> + From<(Self::A, Self::B)> {
 	/// First type
 	type A;
@@ -33,7 +33,7 @@ impl<A, B> Tuple2Family for (A, B) {
 }
 
 /// Slice family
-#[sealed::sealed]
+#[sealed::sealed(erase)]
 pub trait SliceFamily
 where
 	for<'a> &'a Self: From<&'a [Self::Value]> + Into<&'a [Self::Value]>,
