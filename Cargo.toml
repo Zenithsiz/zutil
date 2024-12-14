@@ -1,11 +1,12 @@
 [workspace]
 
-members = ["zutil-legacy"]
+members = ["zutil-app-error", "zutil-legacy"]
 resolver = "2"
 
 [workspace.dependencies]
 
 # Workspace members
+zutil-app-error = { path = "zutil-app-error" }
 zutil-legacy = { path = "zutil-legacy" }
 
 arrayref = "0.3.9"
