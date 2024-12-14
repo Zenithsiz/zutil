@@ -27,7 +27,8 @@
 	never_type,
 	control_flow_enum,
 	unwrap_infallible,
-	associated_type_bounds
+	associated_type_bounds,
+	tuple_trait
 )]
 // Lints
 #![warn(clippy::restriction, clippy::pedantic, clippy::nursery)]

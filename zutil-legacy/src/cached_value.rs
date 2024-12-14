@@ -1,7 +1,11 @@
 //! Cached value
 
 // Imports
-use std::{hash::Hash, marker::PhantomData, ops};
+use std::{
+	hash::Hash,
+	marker::{PhantomData, Tuple},
+	ops,
+};
 
 
 /// A cached, update-able value
@@ -19,7 +23,7 @@ pub struct CachedValue<T, F> {
 
 impl<T, F> CachedValue<T, F> {
 	/// Creates a new cached value from arguments
-	pub fn new<Args: Hash, F2>(args: Args, f: F2) -> Self
+	pub fn new<Args: Tuple + Hash, F2>(args: Args, f: F2) -> Self
 	where
 		F: Fn<Args>,
 		F2: FnOnce<Args, Output = T>,
@@ -28,7 +32,7 @@ impl<T, F> CachedValue<T, F> {
 	}
 
 	/// Tries to creates a new cached value from arguments
-	pub fn try_new<Args: Hash, E, F2>(args: Args, f: F2) -> Result<Self, E>
+	pub fn try_new<Args: Tuple + Hash, E, F2>(args: Args, f: F2) -> Result<Self, E>
 	where
 		F: Fn<Args>,
 		F2: FnOnce<Args, Output = Result<T, E>>,
@@ -47,7 +51,7 @@ impl<T, F> CachedValue<T, F> {
 	}
 
 	/// Updates a cached value given it's arguments and function
-	pub fn update<Args: Hash, F2>(this: &mut Self, args: Args, f: F2)
+	pub fn update<Args: Tuple + Hash, F2>(this: &mut Self, args: Args, f: F2)
 	where
 		F: Fn<Args>,
 		F2: FnOnce<Args, Output = T>,
@@ -56,7 +60,7 @@ impl<T, F> CachedValue<T, F> {
 	}
 
 	/// Tries to update a cached value given it's arguments and function
-	pub fn try_update<Args: Hash, E, F2>(this: &mut Self, args: Args, f: F2) -> Result<(), E>
+	pub fn try_update<Args: Tuple + Hash, E, F2>(this: &mut Self, args: Args, f: F2) -> Result<(), E>
 	where
 		F: Fn<Args>,
 		F2: FnOnce<Args, Output = Result<T, E>>,
@@ -76,7 +80,7 @@ impl<T, F> CachedValue<T, F> {
 	}
 
 	/// Creates or updates a cached value
-	pub fn new_or_update<Args: Hash, F2>(this: &mut Option<Self>, args: Args, f: F2) -> &mut Self
+	pub fn new_or_update<Args: Tuple + Hash, F2>(this: &mut Option<Self>, args: Args, f: F2) -> &mut Self
 	where
 		F: Fn<Args>,
 		F2: FnOnce<Args, Output = T>,
@@ -85,7 +89,9 @@ impl<T, F> CachedValue<T, F> {
 	}
 
 	/// Tries to create or updates a cached value
-	pub fn try_new_or_update<Args: Hash, E, F2>(this: &mut Option<Self>, args: Args, f: F2) -> Result<&mut Self, E>
+	pub fn try_new_or_update<Args: Tuple + Hash, E, F2>(
+		this: &mut Option<Self>, args: Args, f: F2,
+	) -> Result<&mut Self, E>
 	where
 		F: Fn<Args>,
 		F2: FnOnce<Args, Output = Result<T, E>>,
@@ -113,7 +119,7 @@ impl<T, F> ops::Deref for CachedValue<T, F> {
 /// Wraps a function that returns `T` to make it return `Result<T, !>`
 struct FnResultWrapper<F>(F);
 
-impl<F: FnOnce<Args>, Args> FnOnce<Args> for FnResultWrapper<F> {
+impl<F: FnOnce<Args>, Args: Tuple> FnOnce<Args> for FnResultWrapper<F> {
 	type Output = Result<F::Output, !>;
 
 	extern "rust-call" fn call_once(self, args: Args) -> Self::Output {
