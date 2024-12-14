@@ -1,12 +1,14 @@
 [workspace]
 
-members = ["zutil-app-error", "zutil-legacy"]
+members = ["zutil-app-error", "zutil-async-loadable", "zutil-legacy"]
 resolver = "2"
 
 [workspace.dependencies]
 
+
 # Workspace members
 zutil-app-error = { path = "zutil-app-error" }
+zutil-async-loadable = { path = "zutil-async-loadable" }
 zutil-legacy = { path = "zutil-legacy" }
 
 arrayref = "0.3.9"
@@ -18,10 +20,12 @@ futures = "0.3.31"
 int-conv = "0.1.4"
 log = "0.4.22"
 native-dialog = "0.7.0"
+parking_lot = "0.12.3"
 ref-cast = "1.0.23"
 sealed = "0.6.0"
 serde = "1.0.216"
 thiserror = "2.0.7"
+tokio = "1.42.0"
 
 [workspace.lints]
 

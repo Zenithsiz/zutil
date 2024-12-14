@@ -1,0 +1,15 @@
+[package]
+name = "zutil-async-loadable"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+# Workspace
+zutil-app-error = { workspace = true }
+
+parking_lot = { workspace = true, features = ["arc_lock", "send_guard"] }
+tokio = { workspace = true, features = ["sync", "rt"] }
+
+[lints]
+workspace = true
