@@ -1,40 +1,9 @@
-[package]
-authors = ["Filipe Rodrigues <filipejacintorodrigues1@gmail.com>"]
-edition = "2018"
-name = "zutil"
-version = "0.1.0"
+[workspace]
 
-[dependencies]
+members = ["zutil-legacy"]
+resolver = "2"
 
-# Util
-arrayref = "0.3.6"
-ascii = {version = "1.0.0"}
-derive_more = "0.99.14"
-either = "1.6.1"
-int-conv = "0.1.4"
-sealed = "0.3.0"
+[workspace.dependencies]
 
-# Serde
-serde = {version = "1.0.120", features = ["derive"], optional = true}
-
-# Derives
-ref-cast = "1.0.6"
-thiserror = "1.0.23"
-
-# Futures
-futures = {version = "0.3.15", optional = true}
-
-# Logging
-log = "0.4.14"
-
-# Gui
-eframe = {git = "https://github.com/emilk/egui", rev = "7c5a2d60", optional = true}
-
-# Alert
-native-dialog = {version = "0.5.5", optional = true}
-
-[features]
-alert = ["native-dialog"]
-gui = ["eframe"]
-use_futures = ["futures"]
-use_serde = ["serde", "ascii/serde"]
+# Workspace members
+zutil-legacy = { path = "zutil-legacy" }

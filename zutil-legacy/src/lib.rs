@@ -21,7 +21,6 @@
 	fn_traits,
 	decl_macro,
 	array_methods,
-	str_internals,
 	auto_traits,
 	negative_impls,
 	try_trait_v2,
