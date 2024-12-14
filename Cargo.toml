@@ -7,3 +7,12 @@ resolver = "2"
 
 # Workspace members
 zutil-legacy = { path = "zutil-legacy" }
+
+
+[workspace.lints]
+
+# No unsafe allowed in this crate
+rust.unsafe_code = "forbid"
+
+# Must use `expect` instead of `unwrap`
+clippy.unwrap_used = "forbid"

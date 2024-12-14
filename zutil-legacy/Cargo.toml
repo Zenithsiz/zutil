@@ -38,3 +38,6 @@ alert = ["native-dialog"]
 gui = ["eframe"]
 use_futures = ["futures"]
 use_serde = ["serde", "ascii/serde"]
+
+[lints]
+workspace = true
