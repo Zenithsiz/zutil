@@ -100,6 +100,10 @@ impl<T, P> AsyncLoadable<T, P> {
 	}
 
 	/// Waits for this loadable to load
+	///
+	/// # Deadlocks
+	/// If the loading task is still alive in this task when this is called,
+	/// this will deadlock.
 	pub async fn wait(&self) -> Result<T, AppError>
 	where
 		T: Clone,
