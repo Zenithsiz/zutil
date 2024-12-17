@@ -12,5 +12,11 @@ parking_lot = { workspace = true, features = ["arc_lock", "send_guard"] }
 pin-project = { workspace = true }
 tokio = { workspace = true, features = ["sync", "rt"] }
 
+[dev-dependencies]
+
+futures = { workspace = true }
+tokio = { workspace = true, features = ["macros"] }
+
+
 [lints]
 workspace = true
