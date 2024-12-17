@@ -10,7 +10,12 @@
 #![feature(error_reporter, decl_macro)]
 
 // Imports
-use std::{error::Error as StdError, fmt, sync::Arc};
+use std::{
+	error::Error as StdError,
+	fmt,
+	hash::{Hash, Hasher},
+	sync::Arc,
+};
 
 /// Inner
 struct Inner {
@@ -116,6 +121,27 @@ where
 {
 	fn from(err: E) -> Self {
 		Self::new(&err)
+	}
+}
+
+impl PartialEq for AppError {
+	fn eq(&self, other: &Self) -> bool {
+		// If we're the same Arc, we're the same error
+		if Arc::ptr_eq(&self.inner, &other.inner) {
+			return true;
+		}
+
+		// Otherwise, perform a deep comparison
+		self.inner.msg == other.inner.msg && self.inner.source == other.inner.source
+	}
+}
+
+impl Eq for AppError {}
+
+impl Hash for AppError {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.inner.msg.hash(state);
+		self.inner.source.hash(state);
 	}
 }
 
