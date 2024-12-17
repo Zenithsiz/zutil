@@ -19,6 +19,7 @@
 // Modules
 mod load_handle;
 mod progress;
+mod res_arc_guard;
 
 // Exports
 pub use self::{
@@ -28,6 +29,7 @@ pub use self::{
 
 // Imports
 use {
+	self::res_arc_guard::ResArcGuard,
 	parking_lot::Mutex,
 	std::{self, error::Error, fmt, ops::AsyncFnOnce, sync::Arc},
 	tokio::{sync::Notify, task},
@@ -37,8 +39,7 @@ use {
 /// Inner
 pub(crate) struct Inner<T, P> {
 	/// Result
-	// TODO: Remove this double indirection
-	res: Arc<Mutex<Option<Result<T, AppError>>>>,
+	res: Mutex<Res<T>>,
 
 	/// Progress
 	progress: Mutex<Option<P>>,
@@ -63,7 +64,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	pub fn new() -> Self {
 		Self {
 			inner: Arc::new(Inner {
-				res:         Arc::new(Mutex::new(None)),
+				res:         Mutex::new(None),
 				progress:    Mutex::new(None),
 				task_handle: Mutex::new(None),
 				wait:        Notify::new(),
@@ -75,7 +76,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	pub fn from_value(value: T) -> Self {
 		Self {
 			inner: Arc::new(Inner {
-				res:         Arc::new(Mutex::new(Some(Ok(value)))),
+				res:         Mutex::new(Some(Ok(value))),
 				progress:    Mutex::new(None),
 				task_handle: Mutex::new(None),
 				wait:        Notify::new(),
@@ -90,7 +91,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	{
 		Self {
 			inner: Arc::new(Inner {
-				res:         Arc::new(Mutex::new(Some(Err(AppError::new(&err))))),
+				res:         Mutex::new(Some(Err(AppError::new(&err)))),
 				progress:    Mutex::new(None),
 				task_handle: Mutex::new(None),
 				wait:        Notify::new(),
@@ -195,8 +196,8 @@ impl<T, P> AsyncLoadable<T, P> {
 
 		// If we're already initialized, return it
 		#[expect(irrefutable_let_patterns, reason = "We don't want it to live more than the if block")]
-		if let res = self.inner.res.lock_arc() &&
-			res.is_some()
+		if let res = ResArcGuard::new(Arc::clone(&self.inner)) &&
+			res.get().is_some()
 		{
 			return Some(LoadHandle::from_loaded(res));
 		}
@@ -214,8 +215,8 @@ impl<T, P> AsyncLoadable<T, P> {
 				let res = fut.await;
 
 				// Write the result
-				let mut inner_res = inner.res.lock_arc();
-				*inner_res = Some(res);
+				let mut inner_res = ResArcGuard::new(Arc::clone(&inner));
+				inner_res.with_mut(|inner_res| *inner_res = Some(res));
 
 				// Remove the progress
 				// Note: This can't deadlock, as the progress updater already exited.
@@ -290,3 +291,6 @@ impl<T: fmt::Debug, P: fmt::Debug> fmt::Debug for AsyncLoadable<T, P> {
 		}
 	}
 }
+
+/// Result type
+type Res<T> = Option<Result<T, AppError>>;

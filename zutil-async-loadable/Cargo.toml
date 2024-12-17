@@ -9,9 +9,11 @@ edition = "2024"
 zutil-app-error = { workspace = true }
 
 mappable-rc = { workspace = true }
-parking_lot = { workspace = true, features = ["arc_lock", "send_guard"] }
+parking_lot = { workspace = true, features = ["send_guard"] }
 pin-project = { workspace = true }
+stable_deref_trait = { workspace = true }
 tokio = { workspace = true, features = ["sync", "rt"] }
+yoke = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
 

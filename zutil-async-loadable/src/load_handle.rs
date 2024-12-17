@@ -2,7 +2,7 @@
 
 // Imports
 use {
-	parking_lot::ArcMutexGuard,
+	crate::res_arc_guard::ResArcGuard,
 	std::{
 		future::{Future, IntoFuture},
 		pin::Pin,
@@ -13,16 +13,16 @@ use {
 };
 
 /// Load handle inner
-enum LoaderHandleInner<T> {
+enum LoaderHandleInner<T: 'static> {
 	/// Task
-	Task(task::JoinHandle<ArcMutexGuard<parking_lot::RawMutex, Option<Result<T, AppError>>>>),
+	Task(task::JoinHandle<ResArcGuard<T>>),
 
 	/// Already loaded
-	Loaded(ArcMutexGuard<parking_lot::RawMutex, Option<Result<T, AppError>>>),
+	Loaded(ResArcGuard<T>),
 }
 
 /// Load handle
-pub struct LoadHandle<T> {
+pub struct LoadHandle<T: 'static> {
 	/// Inner
 	inner: LoaderHandleInner<T>,
 
@@ -40,14 +40,12 @@ impl<T> LoadHandle<T> {
 	}
 
 	/// Creates a loader handle from a task
-	pub(crate) fn from_task(
-		task: task::JoinHandle<ArcMutexGuard<parking_lot::RawMutex, Option<Result<T, AppError>>>>,
-	) -> Self {
+	pub(crate) fn from_task(task: task::JoinHandle<ResArcGuard<T>>) -> Self {
 		Self::new(LoaderHandleInner::Task(task))
 	}
 
 	/// Creates a loader handle from a loaded value
-	pub(crate) fn from_loaded(res: ArcMutexGuard<parking_lot::RawMutex, Option<Result<T, AppError>>>) -> Self {
+	pub(crate) fn from_loaded(res: ResArcGuard<T>) -> Self {
 		Self::new(LoaderHandleInner::Loaded(res))
 	}
 
@@ -76,7 +74,7 @@ impl Drop for AbortTaskOnDrop {
 #[pin_project::pin_project]
 pub struct LoadHandleFut<T = ()>
 where
-	T: Clone,
+	T: Clone + 'static,
 {
 	/// Inner future
 	#[pin]
@@ -130,7 +128,7 @@ mod load_handle_fut_inner {
 	/// The inner future
 	pub type Fut<T>
 	where
-		T: Clone,
+		T: Clone + 'static,
 	= impl Future<Output = Result<T, AppError>>;
 
 	/// Creates the inner future
@@ -150,7 +148,7 @@ mod load_handle_fut_inner {
 			};
 
 			// Then get the value
-			inner.clone().expect("Value should be loaded")
+			inner.get().clone().expect("Value should be loaded")
 		}
 	}
 }
