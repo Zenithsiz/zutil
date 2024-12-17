@@ -99,6 +99,15 @@ impl<T, P> AsyncLoadable<T, P> {
 		}
 	}
 
+	/// Clone this async loadable by reference-count.
+	///
+	/// The returned loadable shares the same state as this one
+	pub fn clone_rc(&self) -> Self {
+		Self {
+			inner: Arc::clone(&self.inner),
+		}
+	}
+
 	/// Gets the value of the loadable.
 	pub fn get(&self) -> Option<Result<T, AppError>>
 	where
