@@ -8,7 +8,13 @@
 //! from the type.
 
 // Features
-#![feature(async_closure, async_fn_traits, impl_trait_in_assoc_type, type_alias_impl_trait)]
+#![feature(
+	async_closure,
+	async_fn_traits,
+	impl_trait_in_assoc_type,
+	type_alias_impl_trait,
+	let_chains
+)]
 
 // Modules
 mod load_handle;
@@ -31,16 +37,17 @@ use {
 /// Inner
 pub(crate) struct Inner<T, P> {
 	/// Result
-	res: Option<Result<T, AppError>>,
+	// TODO: Remove this double indirection
+	res: Arc<Mutex<Option<Result<T, AppError>>>>,
 
 	/// Progress
-	progress: Option<P>,
+	progress: Mutex<Option<P>>,
 
 	/// Task handle
-	task_handle: Option<task::AbortHandle>,
+	task_handle: Mutex<Option<task::AbortHandle>>,
 
 	/// Wait
-	wait: Arc<Notify>,
+	wait: Notify,
 }
 
 /// An async fallible loadable value.
@@ -48,31 +55,31 @@ pub(crate) struct Inner<T, P> {
 /// Allows the async task to communicate progress.
 pub struct AsyncLoadable<T, P = ()> {
 	/// Inner
-	inner: Arc<Mutex<Inner<T, P>>>,
+	inner: Arc<Inner<T, P>>,
 }
 
 impl<T, P> AsyncLoadable<T, P> {
 	/// Creates a new, unloaded, value
 	pub fn new() -> Self {
 		Self {
-			inner: Arc::new(Mutex::new(Inner {
-				res:         None,
-				progress:    None,
-				task_handle: None,
-				wait:        Arc::new(Notify::new()),
-			})),
+			inner: Arc::new(Inner {
+				res:         Arc::new(Mutex::new(None)),
+				progress:    Mutex::new(None),
+				task_handle: Mutex::new(None),
+				wait:        Notify::new(),
+			}),
 		}
 	}
 
 	/// Creates a new, loaded, value
 	pub fn from_value(value: T) -> Self {
 		Self {
-			inner: Arc::new(Mutex::new(Inner {
-				res:         Some(Ok(value)),
-				progress:    None,
-				task_handle: None,
-				wait:        Arc::new(Notify::new()),
-			})),
+			inner: Arc::new(Inner {
+				res:         Arc::new(Mutex::new(Some(Ok(value)))),
+				progress:    Mutex::new(None),
+				task_handle: Mutex::new(None),
+				wait:        Notify::new(),
+			}),
 		}
 	}
 
@@ -82,12 +89,12 @@ impl<T, P> AsyncLoadable<T, P> {
 		E: ?Sized + Error,
 	{
 		Self {
-			inner: Arc::new(Mutex::new(Inner {
-				res:         Some(Err(AppError::new(&err))),
-				progress:    None,
-				task_handle: None,
-				wait:        Arc::new(Notify::new()),
-			})),
+			inner: Arc::new(Inner {
+				res:         Arc::new(Mutex::new(Some(Err(AppError::new(&err))))),
+				progress:    Mutex::new(None),
+				task_handle: Mutex::new(None),
+				wait:        Notify::new(),
+			}),
 		}
 	}
 
@@ -96,7 +103,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	where
 		T: Clone,
 	{
-		self.inner.lock().res.clone()
+		self.inner.res.lock().clone()
 	}
 
 	/// Waits for this loadable to load
@@ -110,23 +117,21 @@ impl<T, P> AsyncLoadable<T, P> {
 	{
 		#![expect(clippy::await_holding_lock, reason = "We drop the lock before `await`ing")]
 
-		// Otherwise, wait until we're notified by the task
-		let mut inner = self.inner.lock();
+		let mut res = self.inner.res.lock();
 		loop {
-			match &inner.res {
+			match &*res {
 				Some(res) => break res.clone(),
 				None => {
 					// Get the wait future.
 					// Note: According to the documentation, we do *not* need to
 					//       poll it once before being added to the queue for `notify_waiters`,
 					//       which we use.
-					let wait = Arc::clone(&inner.wait);
-					let wait_fut = wait.notified();
+					let wait_fut = self.inner.wait.notified();
 
 					// Then await the future without the lock
-					drop(inner);
+					drop(res);
 					wait_fut.await;
-					inner = self.inner.lock();
+					res = self.inner.res.lock();
 				},
 			}
 		}
@@ -136,22 +141,24 @@ impl<T, P> AsyncLoadable<T, P> {
 	///
 	/// Returns the old value, if any.
 	pub fn reset(&self) -> Option<Result<T, AppError>> {
-		self.inner.lock().res.take()
+		self.inner.res.lock().take()
 	}
 
 	/// Gets the progress of the loadable.
+	///
+	/// If the progress is currently being updated, returns `None`
 	pub fn progress(&self) -> Option<P>
 	where
 		P: Clone,
 	{
-		self.inner.lock().progress.clone()
+		self.inner.progress.try_lock().as_deref().cloned().flatten()
 	}
 
 	/// Returns if the value is loading.
 	pub fn is_loading(&self) -> bool {
 		self.inner
-			.lock()
 			.task_handle
+			.lock()
 			.as_ref()
 			.is_some_and(|task| !task.is_finished())
 	}
@@ -160,8 +167,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	///
 	/// If not loading, does nothing
 	pub fn stop_loading(&self) {
-		let inner = self.inner.lock();
-		if let Some(task_handle) = &inner.task_handle {
+		if let Some(task_handle) = &*self.inner.task_handle.lock() {
 			task_handle.abort();
 		}
 	}
@@ -171,7 +177,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	/// If already loading, returns `None`.
 	///
 	/// Returns a loading handle if successfully loaded.
-	pub fn try_load<F>(&self, f: F) -> Option<LoadHandle<T, P>>
+	pub fn try_load<F>(&self, f: F) -> Option<LoadHandle<T>>
 	where
 		F: AsyncFnOnce(ProgressUpdater<T, P>) -> Result<T, AppError>,
 		F::CallOnceFuture: Send + 'static,
@@ -179,14 +185,20 @@ impl<T, P> AsyncLoadable<T, P> {
 		P: Send + 'static,
 	{
 		// If we're already loading and the task isn't finished, return
-		let mut inner = self.inner.lock_arc();
-		if inner.task_handle.as_ref().is_some_and(|task| !task.is_finished()) {
+		let mut task_handle = self.inner.task_handle.lock();
+		if task_handle
+			.as_ref()
+			.is_some_and(|task_handle| !task_handle.is_finished())
+		{
 			return None;
 		}
 
 		// If we're already initialized, return it
-		if inner.res.is_some() {
-			return Some(LoadHandle::from_loaded(inner));
+		#[expect(irrefutable_let_patterns, reason = "We don't want it to live more than the if block")]
+		if let res = self.inner.res.lock_arc() &&
+			res.is_some()
+		{
+			return Some(LoadHandle::from_loaded(res));
 		}
 
 		// Otherwise start a task and return.
@@ -201,17 +213,24 @@ impl<T, P> AsyncLoadable<T, P> {
 				//       result.
 				let res = fut.await;
 
-				// Write the result, remove the progress and notify everyone
-				let mut inner = inner.lock_arc();
-				inner.res = Some(res);
-				inner.progress = None;
+				// Write the result
+				let mut inner_res = inner.res.lock_arc();
+				*inner_res = Some(res);
+
+				// Remove the progress
+				// Note: This can't deadlock, as the progress updater already exited.
+				// TODO: It *might* be possible to deadlock, if `P`'s clone impl waits
+				//       for the value to be loaded via `LoadHandle`, verify.
+				*inner.progress.lock() = None;
+
+				// Then wake up anyone waiting for us.
 				inner.wait.notify_waiters();
 
 				// Then hand the inner lock to the join handle
-				inner
+				inner_res
 			}
 		});
-		inner.task_handle = Some(join_handle.abort_handle());
+		*task_handle = Some(join_handle.abort_handle());
 
 
 		Some(LoadHandle::from_task(join_handle))
@@ -243,16 +262,31 @@ impl<T, P> Default for AsyncLoadable<T, P> {
 
 impl<T: fmt::Debug, P: fmt::Debug> fmt::Debug for AsyncLoadable<T, P> {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		// Try to lock inner, or just display nothing
-		let Some(inner) = self.inner.try_lock() else {
-			return f.debug_struct("AsyncLoadable").finish_non_exhaustive();
-		};
+		let mut f = f.debug_struct("AsyncLoadable");
 
-		let is_loading = inner.task_handle.as_ref().is_some_and(|task| !task.is_finished());
-		f.debug_struct("AsyncLoadable")
-			.field("value", &inner.res)
-			.field("progress", &inner.progress)
-			.field("is_loading", &is_loading)
-			.finish()
+		// Try to lock each field to output it
+		let mut any_missing = false;
+		match self.inner.res.try_lock() {
+			Some(res) => _ = f.field("value", &*res),
+			None => any_missing = true,
+		}
+		match self.inner.progress.try_lock() {
+			Some(progress) => _ = f.field("progress", &*progress),
+			None => any_missing = true,
+		}
+		match self.inner.task_handle.try_lock() {
+			Some(task_handle) => {
+				let is_loading = task_handle
+					.as_ref()
+					.is_some_and(|task_handle| !task_handle.is_finished());
+				f.field("is_loading", &is_loading);
+			},
+			None => any_missing = true,
+		}
+
+		match any_missing {
+			true => f.finish_non_exhaustive(),
+			false => f.finish(),
+		}
 	}
 }

@@ -2,7 +2,6 @@
 
 // Imports
 use {
-	crate::Inner,
 	parking_lot::ArcMutexGuard,
 	std::{
 		future::{Future, IntoFuture},
@@ -14,26 +13,26 @@ use {
 };
 
 /// Load handle inner
-enum LoaderHandleInner<T, P> {
+enum LoaderHandleInner<T> {
 	/// Task
-	Task(task::JoinHandle<ArcMutexGuard<parking_lot::RawMutex, Inner<T, P>>>),
+	Task(task::JoinHandle<ArcMutexGuard<parking_lot::RawMutex, Option<Result<T, AppError>>>>),
 
 	/// Already loaded
-	Loaded(ArcMutexGuard<parking_lot::RawMutex, Inner<T, P>>),
+	Loaded(ArcMutexGuard<parking_lot::RawMutex, Option<Result<T, AppError>>>),
 }
 
 /// Load handle
-pub struct LoadHandle<T, P = ()> {
+pub struct LoadHandle<T> {
 	/// Inner
-	inner: LoaderHandleInner<T, P>,
+	inner: LoaderHandleInner<T>,
 
 	/// Whether to abort the loading when this handle's future is cancelled
 	abort_on_drop: bool,
 }
 
-impl<T, P> LoadHandle<T, P> {
+impl<T> LoadHandle<T> {
 	/// Creates the loader handle
-	fn new(inner: LoaderHandleInner<T, P>) -> Self {
+	fn new(inner: LoaderHandleInner<T>) -> Self {
 		Self {
 			inner,
 			abort_on_drop: true,
@@ -41,13 +40,15 @@ impl<T, P> LoadHandle<T, P> {
 	}
 
 	/// Creates a loader handle from a task
-	pub(crate) fn from_task(task: task::JoinHandle<ArcMutexGuard<parking_lot::RawMutex, Inner<T, P>>>) -> Self {
+	pub(crate) fn from_task(
+		task: task::JoinHandle<ArcMutexGuard<parking_lot::RawMutex, Option<Result<T, AppError>>>>,
+	) -> Self {
 		Self::new(LoaderHandleInner::Task(task))
 	}
 
 	/// Creates a loader handle from a loaded value
-	pub(crate) fn from_loaded(value: ArcMutexGuard<parking_lot::RawMutex, Inner<T, P>>) -> Self {
-		Self::new(LoaderHandleInner::Loaded(value))
+	pub(crate) fn from_loaded(res: ArcMutexGuard<parking_lot::RawMutex, Option<Result<T, AppError>>>) -> Self {
+		Self::new(LoaderHandleInner::Loaded(res))
 	}
 
 	/// Sets whether the inner task should be aborted if this handle's
@@ -73,13 +74,13 @@ impl Drop for AbortTaskOnDrop {
 
 /// Load handle future
 #[pin_project::pin_project]
-pub struct LoadHandleFut<T, P = ()>
+pub struct LoadHandleFut<T = ()>
 where
 	T: Clone,
 {
 	/// Inner future
 	#[pin]
-	inner: load_handle_fut_inner::Fut<T, P>,
+	inner: load_handle_fut_inner::Fut<T>,
 
 	/// Abort on drop.
 	// Note: It's fine to unconditionally drop this, even after the task
@@ -87,7 +88,7 @@ where
 	abort_on_drop: Option<AbortTaskOnDrop>,
 }
 
-impl<T, P> Future for LoadHandleFut<T, P>
+impl<T> Future for LoadHandleFut<T>
 where
 	T: Clone,
 {
@@ -98,11 +99,11 @@ where
 	}
 }
 
-impl<T, P> IntoFuture for LoadHandle<T, P>
+impl<T> IntoFuture for LoadHandle<T>
 where
 	T: Clone,
 {
-	type IntoFuture = LoadHandleFut<T, P>;
+	type IntoFuture = LoadHandleFut<T>;
 	type Output = Result<T, AppError>;
 
 	fn into_future(self) -> Self::IntoFuture {
@@ -127,13 +128,13 @@ mod load_handle_fut_inner {
 	use {super::*, zutil_app_error::app_error};
 
 	/// The inner future
-	pub type Fut<T, P>
+	pub type Fut<T>
 	where
 		T: Clone,
 	= impl Future<Output = Result<T, AppError>>;
 
 	/// Creates the inner future
-	pub fn new<T, P>(inner: LoaderHandleInner<T, P>) -> Fut<T, P>
+	pub fn new<T>(inner: LoaderHandleInner<T>) -> Fut<T>
 	where
 		T: Clone,
 	{
@@ -149,7 +150,7 @@ mod load_handle_fut_inner {
 			};
 
 			// Then get the value
-			inner.res.clone().expect("Value should be loaded")
+			inner.clone().expect("Value should be loaded")
 		}
 	}
 }
