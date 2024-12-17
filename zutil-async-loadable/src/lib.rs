@@ -10,6 +10,12 @@
 // Features
 #![feature(async_closure, async_fn_traits, impl_trait_in_assoc_type, type_alias_impl_trait)]
 
+// Modules
+mod progress;
+
+// Exports
+pub use progress::ProgressUpdater;
+
 // Imports
 use {
 	parking_lot::{ArcMutexGuard, Mutex},
@@ -26,7 +32,7 @@ use {
 };
 
 /// Inner
-struct Inner<T, P> {
+pub(crate) struct Inner<T, P> {
 	/// Result
 	res: Option<Result<T, AppError>>,
 
@@ -156,9 +162,8 @@ impl<T, P> AsyncLoadable<T, P> {
 		}
 
 		// Otherwise start a task and return.
-		let fut = f(ProgressUpdater {
-			inner: Arc::clone(&self.inner),
-		});
+		let progress_updater = ProgressUpdater::new(Arc::clone(&self.inner));
+		let fut = f(progress_updater);
 		let join_handle = tokio::spawn({
 			let inner = Arc::clone(&self.inner);
 			async move {
@@ -362,28 +367,5 @@ mod load_handle_fut_inner {
 			// Then get the value
 			inner.res.clone().expect("Value should be loaded")
 		}
-	}
-}
-
-/// Progress updater
-pub struct ProgressUpdater<T, P> {
-	/// Inner
-	inner: Arc<Mutex<Inner<T, P>>>,
-}
-
-impl<T, P> ProgressUpdater<T, P> {
-	/// Updates the progress
-	pub fn update(&self, progress: P) {
-		self.inner.lock().progress = Some(progress);
-	}
-
-	/// Updates the progress
-	// TODO: This can deadlock, should we remove it?
-	pub fn update_with<F>(&self, f: F)
-	where
-		F: FnOnce(&mut P),
-		P: Default,
-	{
-		f(self.inner.lock().progress.get_or_insert_default());
 	}
 }
