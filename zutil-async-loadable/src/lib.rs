@@ -23,7 +23,7 @@ pub use self::{
 // Imports
 use {
 	parking_lot::Mutex,
-	std::{self, fmt, ops::AsyncFnOnce, sync::Arc},
+	std::{self, error::Error, fmt, ops::AsyncFnOnce, sync::Arc},
 	tokio::{sync::Notify, task},
 	zutil_app_error::AppError,
 };
@@ -57,6 +57,33 @@ impl<T, P> AsyncLoadable<T, P> {
 		Self {
 			inner: Arc::new(Mutex::new(Inner {
 				res:         None,
+				progress:    None,
+				task_handle: None,
+				wait:        Arc::new(Notify::new()),
+			})),
+		}
+	}
+
+	/// Creates a new, loaded, value
+	pub fn from_value(value: T) -> Self {
+		Self {
+			inner: Arc::new(Mutex::new(Inner {
+				res:         Some(Ok(value)),
+				progress:    None,
+				task_handle: None,
+				wait:        Arc::new(Notify::new()),
+			})),
+		}
+	}
+
+	/// Creates a new, errored, value
+	pub fn from_error<E>(err: &E) -> Self
+	where
+		E: ?Sized + Error,
+	{
+		Self {
+			inner: Arc::new(Mutex::new(Inner {
+				res:         Some(Err(AppError::new(&err))),
 				progress:    None,
 				task_handle: None,
 				wait:        Arc::new(Notify::new()),
