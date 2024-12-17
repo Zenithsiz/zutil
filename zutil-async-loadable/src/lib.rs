@@ -179,7 +179,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	/// Returns a loading handle if successfully loaded.
 	pub fn try_load<F>(&self, f: F) -> Option<LoadHandle<T>>
 	where
-		F: AsyncFnOnce(ProgressUpdater<T, P>) -> Result<T, AppError>,
+		F: AsyncFnOnce(ProgressUpdater<P>) -> Result<T, AppError>,
 		F::CallOnceFuture: Send + 'static,
 		T: Send + Sync + 'static,
 		P: Send + 'static,
@@ -239,7 +239,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	/// Tries to load this value, or waits for it to be loaded.
 	pub async fn try_load_or_wait<F>(&self, f: F) -> Result<T, AppError>
 	where
-		F: AsyncFnOnce(ProgressUpdater<T, P>) -> Result<T, AppError>,
+		F: AsyncFnOnce(ProgressUpdater<P>) -> Result<T, AppError>,
 		F::CallOnceFuture: Send + 'static,
 		T: Clone + Send + Sync + 'static,
 		P: Send + 'static,

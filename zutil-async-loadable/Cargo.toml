@@ -8,6 +8,7 @@ edition = "2024"
 # Workspace
 zutil-app-error = { workspace = true }
 
+mappable-rc = { workspace = true }
 parking_lot = { workspace = true, features = ["arc_lock", "send_guard"] }
 pin-project = { workspace = true }
 tokio = { workspace = true, features = ["sync", "rt"] }
