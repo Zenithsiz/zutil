@@ -62,26 +62,12 @@ pub struct AsyncLoadable<T, P = ()> {
 impl<T, P> AsyncLoadable<T, P> {
 	/// Creates a new, unloaded, value
 	pub fn new() -> Self {
-		Self {
-			inner: Arc::new(Inner {
-				res:         Mutex::new(None),
-				progress:    Mutex::new(None),
-				task_handle: Mutex::new(None),
-				wait:        Notify::new(),
-			}),
-		}
+		Self::from_res(None)
 	}
 
 	/// Creates a new, loaded, value
 	pub fn from_value(value: T) -> Self {
-		Self {
-			inner: Arc::new(Inner {
-				res:         Mutex::new(Some(Ok(value))),
-				progress:    Mutex::new(None),
-				task_handle: Mutex::new(None),
-				wait:        Notify::new(),
-			}),
-		}
+		Self::from_res(Some(Ok(value)))
 	}
 
 	/// Creates a new, errored, value
@@ -89,9 +75,14 @@ impl<T, P> AsyncLoadable<T, P> {
 	where
 		E: ?Sized + Error,
 	{
+		Self::from_res(Some(Err(AppError::new(err))))
+	}
+
+	/// Creates a loadable from it's result
+	pub(crate) fn from_res(res: Res<T>) -> Self {
 		Self {
 			inner: Arc::new(Inner {
-				res:         Mutex::new(Some(Err(AppError::new(&err)))),
+				res:         Mutex::new(res),
 				progress:    Mutex::new(None),
 				task_handle: Mutex::new(None),
 				wait:        Notify::new(),
