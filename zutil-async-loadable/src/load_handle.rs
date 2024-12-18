@@ -72,7 +72,7 @@ impl Drop for AbortTaskOnDrop {
 
 /// Load handle future
 #[pin_project::pin_project]
-pub struct LoadHandleFut<T = ()>
+pub struct LoadHandleFut<T>
 where
 	T: Clone + 'static,
 {
