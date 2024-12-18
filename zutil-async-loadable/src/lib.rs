@@ -8,7 +8,13 @@
 //! from the type.
 
 // Features
-#![feature(async_fn_traits, impl_trait_in_assoc_type, type_alias_impl_trait, let_chains)]
+#![feature(
+	async_fn_traits,
+	impl_trait_in_assoc_type,
+	type_alias_impl_trait,
+	let_chains,
+	never_type
+)]
 
 // Modules
 mod load_handle;
@@ -48,7 +54,7 @@ pub(crate) struct Inner<T, P> {
 /// An async fallible loadable value.
 ///
 /// Allows the async task to communicate progress.
-pub struct AsyncLoadable<T, P = ()> {
+pub struct AsyncLoadable<T, P = !> {
 	/// Inner
 	inner: Arc<Inner<T, P>>,
 }
