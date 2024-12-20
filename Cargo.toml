@@ -1,6 +1,11 @@
 [workspace]
 
-members = ["zutil-app-error", "zutil-async-loadable", "zutil-legacy"]
+members = [
+	"zutil-app-error",
+	"zutil-async-loadable",
+	"zutil-cloned",
+	"zutil-legacy",
+]
 resolver = "2"
 
 [workspace.dependencies]
@@ -9,6 +14,7 @@ resolver = "2"
 # Workspace members
 zutil-app-error = { path = "zutil-app-error" }
 zutil-async-loadable = { path = "zutil-async-loadable" }
+zutil-cloned = { path = "zutil-cloned" }
 zutil-legacy = { path = "zutil-legacy" }
 
 arrayref = "0.3.9"
@@ -23,10 +29,12 @@ mappable-rc = "0.1.1"
 native-dialog = "0.7.0"
 parking_lot = "0.12.3"
 pin-project = "1.1.7"
+quote = "1.0.37"
 ref-cast = "1.0.23"
 sealed = "0.6.0"
 serde = "1.0.216"
 stable_deref_trait = "1.2.0"
+syn = "2.0.90"
 thiserror = "2.0.7"
 tokio = "1.42.0"
 yoke = "0.7.5"
