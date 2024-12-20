@@ -7,14 +7,15 @@
 use {
 	core::iter,
 	proc_macro::TokenStream,
-	quote::quote,
-	syn::{punctuated::Punctuated, Token},
+	quote::ToTokens,
+	syn::{punctuated::Punctuated, spanned::Spanned, Token},
 };
+
 
 #[proc_macro_attribute]
 pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 	let attrs = syn::parse_macro_input!(attr as Attrs);
-	let input = syn::parse_macro_input!(input as Input);
+	let mut input = syn::parse_macro_input!(input as Input);
 
 	let clones = attrs
 		.0
@@ -31,26 +32,37 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 		})
 		.collect::<Vec<syn::Stmt>>();
 
-	let output = match input.expr {
-		syn::Expr::Let(syn::ExprLet {
-			attrs,
-			let_token,
-			pat,
-			eq_token,
-			expr,
-		}) => quote! {
-			#( #attrs )*
-			#let_token #pat #eq_token {
-				#( #clones )*
-				#expr
-			};
+	// Wraps the expression in the clones
+	let wrap_expr = |expr: &mut syn::Expr, trailing_semi: Option<syn::Token![;]>| {
+		*expr = syn::parse_quote_spanned! {expr.span() => {
+			#( #clones )*
+			#expr
+			#trailing_semi
+		}};
+	};
+
+	// Find the expression to replace
+	match &mut input {
+		Input::Stmt(stmt) => match stmt {
+			syn::Stmt::Local(local) => match &mut local.init {
+				Some(init) => wrap_expr(&mut init.expr, None),
+				None => self::cannot_attach("uninitialized let binding"),
+			},
+			syn::Stmt::Item(_) => self::cannot_attach("item"),
+			syn::Stmt::Expr(expr, trailing_semi) => wrap_expr(expr, *trailing_semi),
+			syn::Stmt::Macro(_) => self::cannot_attach("macro call"),
 		},
-		expr => quote! {
-			{
-				#( #clones )*
-				#expr
-			}
-		},
+		// On expressions, use a `;`, unless we have a trailing comma.
+		Input::Expr(expr, trailing_comma) => wrap_expr(expr, match trailing_comma {
+			Some(_) => None,
+			None => Some(syn::parse_quote!(;)),
+		}),
+	};
+
+	// Then output it.
+	let output = match input {
+		Input::Stmt(stmt) => stmt.to_token_stream(),
+		Input::Expr(expr, _) => expr.to_token_stream(),
 	};
 
 	TokenStream::from(output)
@@ -58,19 +70,29 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 
 
 /// Input
-struct Input {
-	expr: syn::Expr,
+#[derive(Debug)]
+enum Input {
+	Stmt(syn::Stmt),
+	Expr(syn::Expr, Option<Token![,]>),
 }
 
 impl syn::parse::Parse for Input {
 	fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+		// Try to parse ourselves as a statement first
+		// TODO: The documentation warns against this specifically, but how can we do better?
+		let is_stmt = input.fork().parse::<syn::Stmt>().is_ok();
+		if is_stmt {
+			let stmt = input.parse::<syn::Stmt>()?;
+			return Ok(Self::Stmt(stmt));
+		}
+
+		// Otherwise, parse an expression
 		let expr = input.parse::<syn::Expr>()?;
 
-		// Allow trailing commas / semicolons so we can parse function arguments / statements
-		let _trailing_comma = input.parse::<Option<Token![,]>>()?;
-		let _trailing_semi = input.parse::<Option<Token![;]>>()?;
+		// Allow trailing commas so we can parse function arguments
+		let trailing_comma = input.parse::<Option<Token![,]>>()?;
 
-		Ok(Self { expr })
+		Ok(Self::Expr(expr, trailing_comma))
 	}
 }
 
@@ -119,4 +141,9 @@ fn ident_to_expr(ident: syn::Ident) -> syn::Expr {
 			.collect(),
 		},
 	})
+}
+
+// Panics with `cannot attach #[cloned] to <kind>`
+fn cannot_attach(kind: &str) -> ! {
+	panic!("Cannot attach `#[cloned]` to {kind}");
 }
