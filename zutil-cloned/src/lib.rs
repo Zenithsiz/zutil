@@ -35,6 +35,8 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 	// Wraps the expression in the clones
 	let wrap_expr = |expr: &mut syn::Expr, trailing_semi: Option<syn::Token![;]>| {
 		*expr = syn::parse_quote_spanned! {expr.span() => {
+			#![allow(clippy::semicolon_outside_block)]
+
 			#( #clones )*
 			#expr
 			#trailing_semi
