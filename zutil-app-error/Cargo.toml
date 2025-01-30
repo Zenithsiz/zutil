@@ -5,5 +5,7 @@ edition = "2024"
 
 [dependencies]
 
+itertools = { workspace = true }
+
 [lints]
 workspace = true
