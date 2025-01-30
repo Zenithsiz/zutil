@@ -235,11 +235,37 @@ impl<T> Context for Option<T> {
 
 /// A macro that formats and creates an [`AppError`]
 pub macro app_error {
-	($msg:literal $(,)?) => {
+	($msg:expr $(,)?) => {
 		$crate::AppError::msg( format!($msg) )
 	},
 
-	($fmt:literal, $($arg:expr),* $(,)?) => {
+	($fmt:expr, $($arg:expr),* $(,)?) => {
 		$crate::AppError::msg( format!($fmt, $($arg,)*) )
+	},
+}
+
+/// A macro that returns an error
+pub macro bail {
+	($msg:expr $(,)?) => {
+		do yeet $crate::app_error!($msg);
+	},
+
+	($fmt:expr, $($arg:expr),* $(,)?) => {
+		do yeet $crate::app_error!($fmt, $($arg),*);
+	},
+}
+
+/// A macro that returns an error if a condition is false
+pub macro ensure {
+	($cond:expr, $msg:expr $(,)?) => {
+		if !$cond {
+			do yeet $crate::app_error!($msg);
+		}
+	},
+
+	($cond:expr, $fmt:expr, $($arg:expr),* $(,)?) => {
+		if !$cond {
+			do yeet $crate::app_error!($fmt, $($arg),*);
+		}
 	},
 }
