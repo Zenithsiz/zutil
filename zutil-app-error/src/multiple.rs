@@ -4,18 +4,33 @@
 use {
 	crate::AppError,
 	itertools::Itertools,
-	std::ops::{ControlFlow, FromResidual, Try},
+	std::{
+		fmt,
+		ops::{ControlFlow, FromResidual, Try},
+	},
 };
 
 /// Helper type to collect a `IntoIter<Item = Result<T, AppError>>`
 /// into a `Result<C, AppError>` with all of the errors instead of the first.
-#[derive(Debug)]
-pub enum AllErrs<C> {
+pub enum AllErrs<C, D = ()> {
 	Ok(C),
-	Err(Vec<AppError>),
+	Err(Vec<AppError<D>>),
 }
 
-impl<C> Default for AllErrs<C>
+impl<C, D> fmt::Debug for AllErrs<C, D>
+where
+	C: fmt::Debug,
+	D: fmt::Debug + 'static,
+{
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			Self::Ok(value) => f.debug_tuple("Ok").field(value).finish(),
+			Self::Err(errs) => f.debug_tuple("Err").field(errs).finish(),
+		}
+	}
+}
+
+impl<C, D> Default for AllErrs<C, D>
 where
 	C: Default,
 {
@@ -23,11 +38,11 @@ where
 		Self::Ok(C::default())
 	}
 }
-impl<C, U> Extend<Result<U, AppError>> for AllErrs<C>
+impl<C, U, D> Extend<Result<U, AppError<D>>> for AllErrs<C, D>
 where
 	C: Extend<U>,
 {
-	fn extend<T: IntoIterator<Item = Result<U, AppError>>>(&mut self, iter: T) {
+	fn extend<T: IntoIterator<Item = Result<U, AppError<D>>>>(&mut self, iter: T) {
 		// TODO: Do this more efficiently?
 		for res in iter {
 			match (&mut *self, res) {
@@ -44,13 +59,13 @@ where
 	}
 }
 
-impl<C, T> FromIterator<Result<T, AppError>> for AllErrs<C>
+impl<C, T, D> FromIterator<Result<T, AppError<D>>> for AllErrs<C, D>
 where
 	C: Default + Extend<T>,
 {
 	fn from_iter<I>(iter: I) -> Self
 	where
-		I: IntoIterator<Item = Result<T, AppError>>,
+		I: IntoIterator<Item = Result<T, AppError<D>>>,
 	{
 		// TODO: If we get any errors, don't allocate memory for the rest of the values?
 		let (values, errs) = iter.into_iter().partition_result::<C, Vec<_>, _, _>();
@@ -61,12 +76,20 @@ where
 	}
 }
 
-#[derive(Debug)]
-pub struct AllErrsResidue(Vec<AppError>);
+pub struct AllErrsResidue<D>(Vec<AppError<D>>);
 
-impl<C> Try for AllErrs<C> {
+impl<D> fmt::Debug for AllErrsResidue<D>
+where
+	D: fmt::Debug + 'static,
+{
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		f.debug_tuple("AllErrsResidue").field(&self.0).finish()
+	}
+}
+
+impl<C, D> Try for AllErrs<C, D> {
 	type Output = C;
-	type Residual = AllErrsResidue;
+	type Residual = AllErrsResidue<D>;
 
 	fn from_output(output: Self::Output) -> Self {
 		Self::Ok(output)
@@ -80,14 +103,14 @@ impl<C> Try for AllErrs<C> {
 	}
 }
 
-impl<T> FromResidual<AllErrsResidue> for AllErrs<T> {
-	fn from_residual(residual: AllErrsResidue) -> Self {
+impl<T, D> FromResidual<AllErrsResidue<D>> for AllErrs<T, D> {
+	fn from_residual(residual: AllErrsResidue<D>) -> Self {
 		Self::Err(residual.0)
 	}
 }
 
-impl<T> FromResidual<AllErrsResidue> for Result<T, AppError> {
-	fn from_residual(residual: AllErrsResidue) -> Self {
+impl<T, D> FromResidual<AllErrsResidue<D>> for Result<T, AppError<D>> {
+	fn from_residual(residual: AllErrsResidue<D>) -> Self {
 		let err = match <[_; 1]>::try_from(residual.0) {
 			Ok([err]) => err,
 			Err(errs) => {

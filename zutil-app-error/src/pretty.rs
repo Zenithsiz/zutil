@@ -9,10 +9,18 @@ use {
 };
 
 /// Pretty display for [`AppError`]
-#[derive(Debug)]
-pub struct PrettyDisplay<'a> {
+pub struct PrettyDisplay<'a, D = ()> {
 	/// Root error
-	root: &'a AppError,
+	root: &'a AppError<D>,
+}
+
+impl<D> fmt::Debug for PrettyDisplay<'_, D>
+where
+	D: fmt::Debug + 'static,
+{
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		f.debug_struct("PrettyDisplay").field("root", &self.root).finish()
+	}
 }
 
 #[derive(PartialEq, Clone, Copy, Debug)]
@@ -31,17 +39,17 @@ impl Column {
 	}
 }
 
-impl<'a> PrettyDisplay<'a> {
+impl<'a, D> PrettyDisplay<'a, D> {
 	/// Creates a new pretty display
-	pub(crate) fn new(root: &'a AppError) -> Self {
+	pub(crate) fn new(root: &'a AppError<D>) -> Self {
 		Self { root }
 	}
 
 	/// Formats a single error
-	fn fmt_single(&self, f: &mut fmt::Formatter<'_>, err: &AppError, columns: &mut Vec<Column>) -> fmt::Result {
+	fn fmt_single(&self, f: &mut fmt::Formatter<'_>, err: &AppError<D>, columns: &mut Vec<Column>) -> fmt::Result {
 		// If it's multiple, display it as multiple
 		let (msg, source) = match &*err.inner {
-			Inner::Single { msg, source } => (msg, source),
+			Inner::Single { msg, source, .. } => (msg, source),
 			Inner::Multiple(errs) => return self.fmt_multiple(f, errs, columns),
 		};
 
@@ -62,7 +70,7 @@ impl<'a> PrettyDisplay<'a> {
 
 				// Then check if we got to a multiple.
 				match &*cur_source.inner {
-					Inner::Single { msg, source } => {
+					Inner::Single { msg, source, .. } => {
 						write!(f, "{msg}",)?;
 
 						// And descend
@@ -84,7 +92,7 @@ impl<'a> PrettyDisplay<'a> {
 	}
 
 	/// Formats multiple errors
-	fn fmt_multiple(&self, f: &mut fmt::Formatter<'_>, errs: &[AppError], columns: &mut Vec<Column>) -> fmt::Result {
+	fn fmt_multiple(&self, f: &mut fmt::Formatter<'_>, errs: &[AppError<D>], columns: &mut Vec<Column>) -> fmt::Result {
 		// Write the top-level error
 		write!(f, "Multiple errors:")?;
 
@@ -114,7 +122,7 @@ impl<'a> PrettyDisplay<'a> {
 	}
 }
 
-impl fmt::Display for PrettyDisplay<'_> {
+impl<D> fmt::Display for PrettyDisplay<'_, D> {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let mut columns = vec![];
 		self.fmt_single(f, self.root, &mut columns)?;
