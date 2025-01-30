@@ -158,7 +158,7 @@ impl fmt::Debug for AppError {
 }
 
 /// Context for `Result`-like types
-pub trait AppErrorContext {
+pub trait Context {
 	type Output;
 
 	/// Adds context to this result, if it's an error
@@ -173,7 +173,7 @@ pub trait AppErrorContext {
 		M: fmt::Display;
 }
 
-impl<T, E> AppErrorContext for Result<T, E>
+impl<T, E> Context for Result<T, E>
 where
 	E: StdError,
 {
@@ -195,7 +195,7 @@ where
 	}
 }
 
-impl<T> AppErrorContext for Result<T, AppError> {
+impl<T> Context for Result<T, AppError> {
 	type Output = Result<T, AppError>;
 
 	fn context<M>(self, msg: M) -> Self::Output
@@ -214,7 +214,7 @@ impl<T> AppErrorContext for Result<T, AppError> {
 	}
 }
 
-impl<T> AppErrorContext for Option<T> {
+impl<T> Context for Option<T> {
 	type Output = Result<T, AppError>;
 
 	fn context<M>(self, msg: M) -> Self::Output
