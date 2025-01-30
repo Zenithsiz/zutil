@@ -12,6 +12,10 @@ use {
 pub struct PrettyDisplay<'a, D = ()> {
 	/// Root error
 	root: &'a AppError<D>,
+
+	/// Ignore error
+	// TODO: Make this a closure?
+	ignore_err: Option<fn(&AppError<D>, &D) -> bool>,
 }
 
 impl<D> fmt::Debug for PrettyDisplay<'_, D>
@@ -42,7 +46,15 @@ impl Column {
 impl<'a, D> PrettyDisplay<'a, D> {
 	/// Creates a new pretty display
 	pub(crate) fn new(root: &'a AppError<D>) -> Self {
-		Self { root }
+		Self { root, ignore_err: None }
+	}
+
+	/// Adds a callback that chooses whether to ignore an error
+	pub fn with_ignore_err(self, ignore_err: fn(&AppError<D>, &D) -> bool) -> Self {
+		Self {
+			ignore_err: Some(ignore_err),
+			..self
+		}
 	}
 
 	/// Formats a single error
@@ -97,13 +109,24 @@ impl<'a, D> PrettyDisplay<'a, D> {
 		write!(f, "Multiple errors:")?;
 
 		// For each error, write it
+		let mut ignored_errs = 0;
 		for (pos, err) in errs.iter().with_position() {
+			// If we should ignore the error, skip
+			if let Some(ignore_err) = self.ignore_err &&
+				self::should_ignore(err, ignore_err)
+			{
+				ignored_errs += 1;
+				continue;
+			}
+
 			f.pad("\n")?;
 			for c in &*columns {
 				f.pad(c.as_str())?;
 			}
 
-			match matches!(pos, ItertoolsPos::Last | ItertoolsPos::Only) {
+			// Note: We'll only print `└─` if we have no ignored errors, since if we do,
+			//       we need that to print the final line showcasing how many we ignored
+			match ignored_errs == 0 && matches!(pos, ItertoolsPos::Last | ItertoolsPos::Only) {
 				true => {
 					f.pad("└─")?;
 					columns.push(Column::Empty);
@@ -118,6 +141,15 @@ impl<'a, D> PrettyDisplay<'a, D> {
 			let _: Option<_> = columns.pop();
 		}
 
+		if ignored_errs != 0 {
+			f.pad("\n")?;
+			for c in &*columns {
+				f.pad(c.as_str())?;
+			}
+			f.pad("└─")?;
+			write!(f, "({ignored_errs} ignored errors)")?;
+		}
+
 		Ok(())
 	}
 }
@@ -129,5 +161,21 @@ impl<D> fmt::Display for PrettyDisplay<'_, D> {
 		assert_eq!(columns.len(), 0, "There should be no columns after formatting");
 
 		Ok(())
+	}
+}
+
+// Returns whether an error should be ignored
+fn should_ignore<D>(err: &AppError<D>, ignore_err: fn(&AppError<D>, &D) -> bool) -> bool {
+	match &*err.inner {
+		// When dealing with a single error, we ignore if it any error in it's tree, including itself
+		// should be ignored.
+		Inner::Single { source, data, .. } =>
+			ignore_err(err, data) ||
+				source
+					.as_ref()
+					.is_some_and(|source| self::should_ignore(source, ignore_err)),
+
+		// For multiple errors, we only ignore it if all should be ignored.
+		Inner::Multiple(errs) => errs.iter().all(|err| self::should_ignore(err, ignore_err)),
 	}
 }

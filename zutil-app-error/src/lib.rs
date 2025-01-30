@@ -10,7 +10,7 @@
 //! The inner representation is currently just `Arc<(String, Option<AppError>) | Box<[AppError]>>`.
 
 // Features
-#![feature(error_reporter, decl_macro, try_trait_v2, extend_one)]
+#![feature(error_reporter, decl_macro, try_trait_v2, extend_one, let_chains)]
 
 // Modules
 mod multiple;
