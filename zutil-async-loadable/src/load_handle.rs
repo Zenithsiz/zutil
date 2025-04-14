@@ -9,7 +9,7 @@ use {
 		task::Poll,
 	},
 	tokio::task,
-	zutil_app_error::AppError,
+	zutil_app_error::{AppError, app_error},
 };
 
 /// Load handle inner
@@ -78,7 +78,7 @@ where
 {
 	/// Inner future
 	#[pin]
-	inner: load_handle_fut_inner::Fut<T>,
+	inner: LoadHandleFutInner<T>,
 
 	/// Abort on drop.
 	// Note: It's fine to unconditionally drop this, even after the task
@@ -104,6 +104,7 @@ where
 	type IntoFuture = LoadHandleFut<T>;
 	type Output = Result<T, AppError>;
 
+	#[define_opaque(LoadHandleFutInner)]
 	fn into_future(self) -> Self::IntoFuture {
 		let abort_on_drop = match self.abort_on_drop {
 			true => match &self.inner {
@@ -116,39 +117,29 @@ where
 		};
 
 		LoadHandleFut {
-			inner: load_handle_fut_inner::new(self.inner),
+			inner: {
+				async move {
+					// Get the lock to inner
+					let inner = match self.inner {
+						LoaderHandleInner::Task(join_handle) =>
+							join_handle.await.map_err(|err| match err.try_into_panic() {
+								Ok(err) => app_error!("Loader panicked: {err:?}"),
+								Err(err) => AppError::new(&err).context("Loader was cancelled"),
+							})?,
+						LoaderHandleInner::Loaded(inner) => inner,
+					};
+
+					// Then get the value
+					inner.get().clone().expect("Value should be loaded")
+				}
+			},
 			abort_on_drop,
 		}
 	}
 }
 
-mod load_handle_fut_inner {
-	use {super::*, zutil_app_error::app_error};
-
-	/// The inner future
-	pub type Fut<T>
-	where
-		T: Clone + 'static,
-	= impl Future<Output = Result<T, AppError>>;
-
-	/// Creates the inner future
-	pub fn new<T>(inner: LoaderHandleInner<T>) -> Fut<T>
-	where
-		T: Clone,
-	{
-		async move {
-			// Get the lock to inner
-			let inner = match inner {
-				LoaderHandleInner::Task(join_handle) =>
-					join_handle.await.map_err(|err| match err.try_into_panic() {
-						Ok(err) => app_error!("Loader panicked: {err:?}"),
-						Err(err) => AppError::new(&err).context("Loader was cancelled"),
-					})?,
-				LoaderHandleInner::Loaded(inner) => inner,
-			};
-
-			// Then get the value
-			inner.get().clone().expect("Value should be loaded")
-		}
-	}
-}
+/// The inner future
+pub type LoadHandleFutInner<T>
+where
+	T: Clone + 'static,
+= impl Future<Output = Result<T, AppError>>;
