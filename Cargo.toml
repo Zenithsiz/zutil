@@ -40,6 +40,8 @@ thiserror = "2.0.7"
 tokio = "1.42.0"
 yoke = "0.7.5"
 
+app-error = { git = "https://github.com/Zenithsiz/app-error", rev = "30238f3778fe84809ba2113c1199852b7bc7c1e9" }
+
 [workspace.lints]
 
 # Must use `expect` instead of `unwrap`
