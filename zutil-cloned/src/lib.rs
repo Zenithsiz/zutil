@@ -45,7 +45,7 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 
 	// Find the expression to replace
 	match &mut input {
-		Input::Stmt(stmt) => match stmt {
+		Input::Stmt { stmt } => match stmt {
 			syn::Stmt::Local(local) => match &mut local.init {
 				Some(init) => wrap_expr(&mut init.expr, None),
 				None => self::cannot_attach("uninitialized let binding"),
@@ -55,13 +55,13 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 			syn::Stmt::Macro(_) => self::cannot_attach("macro call"),
 		},
 		// On expressions, never use a trailing semi
-		Input::Expr(expr, _) => wrap_expr(expr, None),
+		Input::Expr { expr, .. } => wrap_expr(expr, None),
 	};
 
 	// Then output it.
 	let output = match input {
-		Input::Stmt(stmt) => stmt.to_token_stream(),
-		Input::Expr(expr, _) => expr.to_token_stream(),
+		Input::Stmt { stmt } => stmt.to_token_stream(),
+		Input::Expr { expr, .. } => expr.to_token_stream(),
 	};
 
 	TokenStream::from(output)
@@ -71,8 +71,13 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 /// Input
 #[derive(Debug)]
 enum Input {
-	Stmt(syn::Stmt),
-	Expr(syn::Expr, Option<Token![,]>),
+	Stmt {
+		stmt: syn::Stmt,
+	},
+	Expr {
+		expr:            syn::Expr,
+		_trailing_comma: Option<Token![,]>,
+	},
 }
 
 impl syn::parse::Parse for Input {
@@ -82,7 +87,7 @@ impl syn::parse::Parse for Input {
 		let is_stmt = input.fork().parse::<syn::Stmt>().is_ok();
 		if is_stmt {
 			let stmt = input.parse::<syn::Stmt>()?;
-			return Ok(Self::Stmt(stmt));
+			return Ok(Self::Stmt { stmt });
 		}
 
 		// Otherwise, parse an expression
@@ -91,7 +96,10 @@ impl syn::parse::Parse for Input {
 		// Allow trailing commas so we can parse function arguments
 		let trailing_comma = input.parse::<Option<Token![,]>>()?;
 
-		Ok(Self::Expr(expr, trailing_comma))
+		Ok(Self::Expr {
+			expr,
+			_trailing_comma: trailing_comma,
+		})
 	}
 }
 
