@@ -54,11 +54,8 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 			syn::Stmt::Expr(expr, trailing_semi) => wrap_expr(expr, *trailing_semi),
 			syn::Stmt::Macro(_) => self::cannot_attach("macro call"),
 		},
-		// On expressions, use a `;`, unless we have a trailing comma.
-		Input::Expr(expr, trailing_comma) => wrap_expr(expr, match trailing_comma {
-			Some(_) => None,
-			None => Some(syn::parse_quote!(;)),
-		}),
+		// On expressions, never use a trailing semi
+		Input::Expr(expr, _) => wrap_expr(expr, None),
 	};
 
 	// Then output it.
