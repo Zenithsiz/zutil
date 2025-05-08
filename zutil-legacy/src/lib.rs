@@ -160,7 +160,7 @@ pub fn write_to_file<T: serde::Serialize, E: fmt::Debug + error::Error + 'static
 #[allow(clippy::panic)] // Rust panics on failed arithmetic operations by default
 #[must_use]
 pub fn abs_diff(a: u64, b: u64) -> i64 {
-	let diff = if a > b { a - b } else { b - a };
+	let diff = a.abs_diff(b);
 
 	if diff > i64::MAX as u64 {
 		panic!("Overflow when computing signed distance between `u64`");

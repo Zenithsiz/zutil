@@ -59,14 +59,14 @@ impl<A: Alphabet, const N: usize> Deref for StrArrAlphabet<A, N> {
 impl<A: Alphabet, const N: usize> fmt::Debug for StrArrAlphabet<A, N> {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let s: &StrAlphabet<A> = self;
-		write!(f, "{:?}", s)
+		write!(f, "{s:?}")
 	}
 }
 
 impl<A: Alphabet, const N: usize> fmt::Display for StrArrAlphabet<A, N> {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let s: &StrAlphabet<A> = self;
-		write!(f, "{}", s)
+		write!(f, "{s}")
 	}
 }
 

@@ -37,13 +37,13 @@ impl<A: Alphabet> Deref for StringAlphabet<A> {
 impl<A: Alphabet> fmt::Debug for StringAlphabet<A> {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let s: &StrAlphabet<A> = self;
-		write!(f, "{:?}", s)
+		write!(f, "{s:?}")
 	}
 }
 
 impl<A: Alphabet> fmt::Display for StringAlphabet<A> {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let s: &StrAlphabet<A> = self;
-		write!(f, "{}", s)
+		write!(f, "{s}")
 	}
 }
