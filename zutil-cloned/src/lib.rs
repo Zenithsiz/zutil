@@ -8,9 +8,8 @@ use {
 	core::iter,
 	proc_macro::TokenStream,
 	quote::ToTokens,
-	syn::{punctuated::Punctuated, spanned::Spanned, Token},
+	syn::{punctuated::Punctuated, spanned::Spanned},
 };
-
 
 #[proc_macro_attribute]
 pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
@@ -18,7 +17,7 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 	let mut input = syn::parse_macro_input!(input as Input);
 
 	let clones = attrs
-		.0
+		.clones
 		.into_iter()
 		.map(|attr| {
 			let ident = attr.ident;
@@ -36,6 +35,7 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 	let wrap_expr = |expr: &mut syn::Expr, trailing_semi: Option<syn::Token![;]>| {
 		*expr = syn::parse_quote_spanned! {expr.span() => {
 			#![allow(clippy::semicolon_outside_block)]
+			#![allow(clippy::semicolon_if_nothing_returned)]
 
 			#( #clones )*
 			#expr
@@ -47,21 +47,25 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 	match &mut input {
 		Input::Stmt { stmt } => match stmt {
 			syn::Stmt::Local(local) => match &mut local.init {
+				// Note: this expression is an initializer, so it never needs the trailing semi
 				Some(init) => wrap_expr(&mut init.expr, None),
 				None => self::cannot_attach("uninitialized let binding"),
 			},
 			syn::Stmt::Item(_) => self::cannot_attach("item"),
+
+			// Statement expressions also just carry their previous trailing semicolon
 			syn::Stmt::Expr(expr, trailing_semi) => wrap_expr(expr, *trailing_semi),
 			syn::Stmt::Macro(_) => self::cannot_attach("macro call"),
 		},
-		// On expressions, never use a trailing semi
-		Input::Expr { expr, .. } => wrap_expr(expr, None),
+
+		// Normal expressions are the only place we need the user to tell us whether to use a semi or not
+		Input::Expr { expr } => wrap_expr(expr, attrs.semi),
 	};
 
 	// Then output it.
 	let output = match input {
 		Input::Stmt { stmt } => stmt.to_token_stream(),
-		Input::Expr { expr, .. } => expr.to_token_stream(),
+		Input::Expr { expr } => expr.to_token_stream(),
 	};
 
 	TokenStream::from(output)
@@ -69,15 +73,9 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 
 
 /// Input
-#[derive(Debug)]
 enum Input {
-	Stmt {
-		stmt: syn::Stmt,
-	},
-	Expr {
-		expr:            syn::Expr,
-		_trailing_comma: Option<Token![,]>,
-	},
+	Stmt { stmt: syn::Stmt },
+	Expr { expr: syn::Expr },
 }
 
 impl syn::parse::Parse for Input {
@@ -94,22 +92,50 @@ impl syn::parse::Parse for Input {
 		let expr = input.parse::<syn::Expr>()?;
 
 		// Allow trailing commas so we can parse function arguments
-		let trailing_comma = input.parse::<Option<Token![,]>>()?;
+		let _trailing_comma = input.parse::<Option<syn::Token![,]>>()?;
 
-		Ok(Self::Expr {
-			expr,
-			_trailing_comma: trailing_comma,
-		})
+		Ok(Self::Expr { expr })
 	}
 }
 
 /// Attributes
-struct Attrs(Punctuated<Attr, Token![,]>);
+struct Attrs {
+	/// Whether to semi a semicolon at the end
+	semi: Option<syn::Token![;]>,
+
+	// All of the clones
+	clones: Vec<Attr>,
+}
 
 impl syn::parse::Parse for Attrs {
 	fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-		let attrs = Punctuated::parse_terminated(input)?;
-		Ok(Self(attrs))
+		let clones = Punctuated::<_, syn::Token![,]>::parse_terminated_with(input, |input| {
+			let attr = input.parse::<Attr>()?;
+			let semi = input.parse::<Option<syn::Token![;]>>()?;
+
+			Ok((attr, semi))
+		})?;
+
+		let mut semi = None::<syn::Token![;]>;
+		let clones = clones
+			.into_iter()
+			.map(|(attr, new_semi)| {
+				if let Some(new_semi) = new_semi {
+					match semi {
+						Some(old_semi) =>
+							return Err(syn::Error::new(
+								old_semi.span,
+								"Unexpected `;`, only allowed to be trailing",
+							)),
+						None => semi = Some(new_semi),
+					}
+				}
+
+				Ok(attr)
+			})
+			.collect::<Result<_, _>>()?;
+
+		Ok(Self { semi, clones })
 	}
 }
 
