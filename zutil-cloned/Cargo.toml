@@ -1,5 +1,5 @@
 [package]
-name = "zutil-cloned"
+name    = "zutil-cloned"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,7 +9,7 @@ proc-macro = true
 [dependencies]
 
 quote = { workspace = true }
-syn = { workspace = true, features = ["full"] }
+syn   = { features = ["full"], workspace = true }
 
 [lints]
 workspace = true

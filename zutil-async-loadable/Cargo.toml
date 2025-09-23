@@ -1,22 +1,22 @@
 [package]
-name = "zutil-async-loadable"
+name    = "zutil-async-loadable"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 
-app-error = { workspace = true }
-mappable-rc = { workspace = true }
-parking_lot = { workspace = true, features = ["send_guard"] }
-pin-project = { workspace = true }
+app-error          = { workspace = true }
+mappable-rc        = { workspace = true }
+parking_lot        = { features = ["send_guard"], workspace = true }
+pin-project        = { workspace = true }
 stable_deref_trait = { workspace = true }
-tokio = { workspace = true, features = ["sync", "rt"] }
-yoke = { workspace = true, features = ["derive"] }
+tokio              = { features = ["rt", "sync"], workspace = true }
+yoke               = { features = ["derive"], workspace = true }
 
 [dev-dependencies]
 
 futures = { workspace = true }
-tokio = { workspace = true, features = ["macros"] }
+tokio   = { workspace = true, features = ["macros"] }
 
 
 [lints]
