@@ -1,18 +1,12 @@
 [workspace]
 
-members = [
-	"zutil-app-error",
-	"zutil-async-loadable",
-	"zutil-cloned",
-	"zutil-legacy",
-]
+members = ["zutil-async-loadable", "zutil-cloned", "zutil-legacy"]
 resolver = "2"
 
 [workspace.dependencies]
 
 
 # Workspace members
-zutil-app-error = { path = "zutil-app-error" }
 zutil-async-loadable = { path = "zutil-async-loadable" }
 zutil-cloned = { path = "zutil-cloned" }
 zutil-legacy = { path = "zutil-legacy" }
@@ -39,7 +33,6 @@ syn = "2.0.90"
 thiserror = "2.0.7"
 tokio = "1.42.0"
 yoke = "0.7.5"
-
 app-error = { git = "https://github.com/Zenithsiz/app-error", rev = "30238f3778fe84809ba2113c1199852b7bc7c1e9" }
 
 [workspace.lints]

@@ -5,9 +5,7 @@ edition = "2024"
 
 [dependencies]
 
-# Workspace
-zutil-app-error = { workspace = true }
-
+app-error = { workspace = true }
 mappable-rc = { workspace = true }
 parking_lot = { workspace = true, features = ["send_guard"] }
 pin-project = { workspace = true }

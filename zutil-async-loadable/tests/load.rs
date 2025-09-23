@@ -5,7 +5,7 @@ use {
 	futures::FutureExt,
 	std::{pin::pin, sync::Arc},
 	tokio::sync::Mutex,
-	zutil_app_error::AppError,
+	app_error::AppError,
 	zutil_async_loadable::AsyncLoadable,
 };
 
