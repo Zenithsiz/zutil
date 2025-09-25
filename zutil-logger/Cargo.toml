@@ -1,0 +1,15 @@
+[package]
+name    = "zutil-logger"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+duplicate          = { workspace = true }
+itertools          = { workspace = true }
+tracing            = { features = ["log"], workspace = true }
+tracing-subscriber = { features = ["env-filter"], workspace = true }
+zutil-cloned       = { workspace = true }
+
+[lints]
+workspace = true
