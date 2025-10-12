@@ -1,27 +1,35 @@
 //! Logger
 
 // Features
-#![feature(nonpoison_mutex, sync_nonpoison, anonymous_lifetime_in_impl_trait)]
+#![feature(
+	nonpoison_mutex,
+	sync_nonpoison,
+	anonymous_lifetime_in_impl_trait,
+	type_changing_struct_update,
+	never_type
+)]
 
 // Modules
+mod builder;
 mod file;
 mod pre_init;
 mod term;
 
+// Exports
+pub use self::builder::LoggerBuilder;
+
 // Imports
 use {
-	self::{file::FileWriter, pre_init::PreInitLogger},
+	self::file::FileWriter,
 	itertools::Itertools,
 	std::{
-		self,
 		collections::{HashMap, hash_map},
 		env::{self, VarError},
 		fs,
-		io::Write,
+		io,
 		path::Path,
 	},
-	tracing::Subscriber,
-	tracing_subscriber::{Layer, Registry, fmt::MakeWriter, layer::Layered, prelude::*, registry::LookupSpan},
+	tracing_subscriber::Registry,
 };
 
 /// Logger
@@ -31,49 +39,14 @@ pub struct Logger {
 }
 
 impl Logger {
-	/// Creates a new logger
-	///
-	/// Starts already logging to stderr.
-	pub fn new<W, L>(
-		stderr: W,
-		extra_layers: L,
-		default_stderr_filters: impl IntoIterator<Item = (Option<&'_ str>, &'_ str)>,
-		default_file_filters: impl IntoIterator<Item = (Option<&'_ str>, &'_ str)>,
-	) -> Self
-	where
-		W: for<'a> MakeWriter<'a> + Clone + Send + Sync + 'static,
-		L: ExtraLayers<LoggerSubscriber>,
-		L::Subscriber: Subscriber + for<'a> LookupSpan<'a> + Send + Sync + 'static,
-	{
-		// Create the pre-init logger to log everything until we have our loggers running.
-		let pre_init_logger = PreInitLogger::new();
+	/// Creates a default logger
+	pub fn new() -> Self {
+		Self::builder().build()
+	}
 
-		// Then initialize our logging
-		let file_writer = FileWriter::memory();
-
-		// Note: Due to [this issue](https://github.com/tokio-rs/tracing/issues/1817),
-		//       the order here matters, and the stderr ones must be last.
-		let subscriber = LoggerSubscriber::default();
-		let subscriber = extra_layers
-			.layer_on(subscriber)
-			.with(file::layer(file_writer.clone(), default_file_filters))
-			.with(term::layer(stderr.clone(), default_stderr_filters));
-		if let Err(err) = subscriber.try_init() {
-			eprintln!("Failed to set global logger: {err}");
-		}
-
-		// Finally write the pre-init output to our writes
-		pre_init_logger
-			.into_output()
-			.with_bytes(|bytes| {
-				stderr.make_writer().write_all(bytes)?;
-				file_writer.make_writer().write_all(bytes)
-			})
-			.expect("Unable to write pre-init output");
-
-		tracing::info!("Successfully initialized logger");
-
-		Self { file_writer }
+	/// Creates a builder for the logger
+	pub fn builder() -> LoggerBuilder<fn() -> io::Stderr, LoggerSubscriber> {
+		LoggerBuilder::new()
 	}
 
 	/// Sets a file to log into.
@@ -94,6 +67,12 @@ impl Logger {
 			},
 			None => self.file_writer.set_empty(),
 		}
+	}
+}
+
+impl Default for Logger {
+	fn default() -> Self {
+		Self::new()
 	}
 }
 
@@ -149,46 +128,4 @@ fn get_env_filters(env: &str, default_filters: impl IntoIterator<Item = (Option<
 	tracing::trace!("Using {env}={var}");
 
 	var
-}
-
-/// Extra layers
-pub trait ExtraLayers<S> {
-	/// Subscriber with all layers
-	type Subscriber;
-
-	/// Layers all layers onto a subscriber
-	fn layer_on(self, subscriber: S) -> Self::Subscriber;
-}
-
-impl<S> ExtraLayers<S> for () {
-	type Subscriber = S;
-
-	fn layer_on(self, subscriber: S) -> Self::Subscriber {
-		subscriber
-	}
-}
-
-impl<S, L> ExtraLayers<S> for (L,)
-where
-	S: Subscriber,
-	L: Layer<S>,
-{
-	type Subscriber = Layered<L, S>;
-
-	fn layer_on(self, subscriber: S) -> Self::Subscriber {
-		subscriber.with(self.0)
-	}
-}
-
-impl<S, L0, L1> ExtraLayers<S> for (L0, L1)
-where
-	S: Subscriber,
-	L0: Layer<S>,
-	L1: Layer<Layered<L0, S>>,
-{
-	type Subscriber = Layered<L1, Layered<L0, S>>;
-
-	fn layer_on(self, subscriber: S) -> Self::Subscriber {
-		subscriber.with(self.0).with(self.1)
-	}
 }
