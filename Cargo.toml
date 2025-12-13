@@ -14,11 +14,12 @@ repository = "https://github.com/zenithsiz/zutil"
 
 
 # Workspace members
-zutil-async-loadable = { path = "zutil-async-loadable" }
-zutil-cloned         = { path = "zutil-cloned" }
-zutil-logger         = { path = "zutil-logger" }
+# TODO: Do we need to specify the version here?
+zutil-async-loadable = { path = "zutil-async-loadable", version = "0.1.0" }
+zutil-cloned         = { path = "zutil-cloned", version = "0.1.0" }
+zutil-logger         = { path = "zutil-logger", version = "0.1.0" }
 
-app-error          = { git = "https://github.com/Zenithsiz/app-error", rev = "30238f3778fe84809ba2113c1199852b7bc7c1e9" }
+app-error          = "0.1.0"
 arrayref           = "0.3.9"
 ascii              = "1.1.0"
 derive_more        = "2.0.1"
