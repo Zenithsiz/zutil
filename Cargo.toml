@@ -3,6 +3,13 @@
 members  = ["zutil-async-loadable", "zutil-cloned", "zutil-logger"]
 resolver = "2"
 
+[workspace.package]
+authors    = ["Filipe Rodrigues <filipejacintorodrigues1@gmail.com>"]
+edition    = "2024"
+homepage   = "https://github.com/zenithsiz/zutil"
+license    = "MIT OR Apache-2.0"
+repository = "https://github.com/zenithsiz/zutil"
+
 [workspace.dependencies]
 
 
