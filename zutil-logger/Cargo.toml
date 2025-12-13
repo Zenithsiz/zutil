@@ -1,11 +1,12 @@
 [package]
-name       = "zutil-logger"
-version    = "0.1.0"
-edition    = { workspace = true }
-authors    = { workspace = true }
-homepage   = { workspace = true }
-license    = { workspace = true }
-repository = { workspace = true }
+name        = "zutil-logger"
+version     = "0.1.0"
+description = "`tracing` logger"
+edition     = { workspace = true }
+authors     = { workspace = true }
+homepage    = { workspace = true }
+license     = { workspace = true }
+repository  = { workspace = true }
 
 [dependencies]
 

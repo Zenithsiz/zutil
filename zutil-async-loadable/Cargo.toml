@@ -1,11 +1,12 @@
 [package]
-name       = "zutil-async-loadable"
-version    = "0.1.0"
-edition    = { workspace = true }
-authors    = { workspace = true }
-homepage   = { workspace = true }
-license    = { workspace = true }
-repository = { workspace = true }
+name        = "zutil-async-loadable"
+version     = "0.1.0"
+description = "Async loadable value"
+edition     = { workspace = true }
+authors     = { workspace = true }
+homepage    = { workspace = true }
+license     = { workspace = true }
+repository  = { workspace = true }
 
 [dependencies]
 
