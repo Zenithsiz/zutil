@@ -5,8 +5,7 @@
 	nonpoison_mutex,
 	sync_nonpoison,
 	anonymous_lifetime_in_impl_trait,
-	type_changing_struct_update,
-	never_type
+	type_changing_struct_update
 )]
 
 // Modules

@@ -1,8 +1,5 @@
 //! Macros for `zutil-cloned`
 
-// Features
-#![feature(if_let_guard, try_blocks)]
-
 // Imports
 use {
 	core::iter,

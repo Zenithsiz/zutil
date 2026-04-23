@@ -8,7 +8,7 @@
 //! from the type.
 
 // Features
-#![feature(async_fn_traits, impl_trait_in_assoc_type, type_alias_impl_trait, never_type)]
+#![feature(async_fn_traits, type_alias_impl_trait, never_type)]
 
 // Modules
 mod load_handle;
@@ -189,7 +189,6 @@ impl<T, P> AsyncLoadable<T, P> {
 		}
 
 		// If we're already initialized, return it
-		#[expect(irrefutable_let_patterns, reason = "We don't want it to live more than the if block")]
 		if let res = ResArcGuard::new(Arc::clone(&self.inner)) &&
 			res.get().is_some()
 		{
