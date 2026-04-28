@@ -33,7 +33,7 @@ pub use {
 		downcast::Downcast,
 		extend::{Extend, ExtendStorage},
 		storage::BaseStorage,
-		util::{AsNonNullOf, Contains, ReprTransparent},
+		util::{AsNonNullOf, ReprIs, ReprTransparent},
 		value::{Value, ValueFor},
 		vtable::BaseVTable,
 		weak::{ValueDowngrade, WeakValue},

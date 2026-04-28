@@ -2,7 +2,7 @@
 
 // Imports
 use {
-	crate::{AsNonNullOf, Base, BaseStorage, BaseVTable, Contains, ReprTransparent},
+	crate::{AsNonNullOf, Base, BaseStorage, BaseVTable, ReprIs, ReprTransparent},
 	core::any::TypeId,
 };
 
@@ -18,14 +18,14 @@ pub const trait Value: [const] ReprTransparent<Base> + Sized + 'static {
 	type Methods;
 
 	/// Storage.
-	type Storage: [const] Contains<<Self::Parent as Value>::Storage>
-		+ [const] Contains<BaseStorage>
+	type Storage: [const] ReprIs<<Self::Parent as Value>::Storage>
+		+ [const] ReprIs<BaseStorage>
 		+ [const] AsRef<Self::Fields>
 		+ [const] AsNonNullOf<Self::Fields>;
 
 	/// `VTable`
-	type VTable: [const] Contains<<Self::Parent as Value>::VTable>
-		+ [const] Contains<BaseVTable>
+	type VTable: [const] ReprIs<<Self::Parent as Value>::VTable>
+		+ [const] ReprIs<BaseVTable>
 		+ [const] AsRef<Self::Methods>
 		+ [const] AsNonNullOf<Self::Methods>;
 

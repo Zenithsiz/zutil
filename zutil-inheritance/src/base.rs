@@ -7,7 +7,7 @@ use {
 		BaseStorage,
 		BaseVTable,
 		CloneStorage,
-		Contains,
+		ReprIs,
 		FromFields,
 		ReprTransparent,
 		Value,
@@ -42,8 +42,8 @@ impl Base {
 		// SAFETY: We just allocated the pointer
 		unsafe { storage_ptr.write(storage) };
 
-		let storage = Contains::to_non_null(storage_ptr);
-		let vtable = Contains::to_non_null(NonNull::from_ref(T::VTABLE));
+		let storage = ReprIs::to_non_null(storage_ptr);
+		let vtable = ReprIs::to_non_null(NonNull::from_ref(T::VTABLE));
 
 		Self { storage, vtable }
 	}
@@ -93,7 +93,7 @@ impl Base {
 	/// or one of it's parent types.
 	#[must_use]
 	pub const unsafe fn storage_of<T: [const] Value>(&self) -> &T::Storage {
-		let storage = <T::Storage as Contains<BaseStorage>>::from_non_null(self.storage);
+		let storage = <T::Storage as ReprIs<BaseStorage>>::from_non_null(self.storage);
 
 		// SAFETY: Caller ensures that a `T::Storage` exists.
 		unsafe { storage.as_ref() }
@@ -118,7 +118,7 @@ impl Base {
 	/// or one of it's parent types.
 	#[must_use]
 	pub const unsafe fn vtable_of<T: [const] Value>(&self) -> &'static T::VTable {
-		let vtable = <T::VTable as Contains<BaseVTable>>::from_non_null(self.vtable);
+		let vtable = <T::VTable as ReprIs<BaseVTable>>::from_non_null(self.vtable);
 
 		// SAFETY: Caller ensures that a `T::VTable` exists.
 		unsafe { vtable.as_ref() }
@@ -137,7 +137,7 @@ impl Base {
 			return Err(self);
 		}
 
-		let storage_ptr = <T::Storage as Contains<BaseStorage>>::from_non_null(self.storage);
+		let storage_ptr = <T::Storage as ReprIs<BaseStorage>>::from_non_null(self.storage);
 		// SAFETY: We allocated a `T::Storage` in `self` that we're retrieving now.
 		//         There aren't any other references to this value currently.
 		let storage = unsafe { storage_ptr.read() };

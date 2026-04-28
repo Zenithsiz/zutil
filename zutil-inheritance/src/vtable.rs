@@ -2,7 +2,7 @@
 
 // Imports
 use {
-	crate::{AsNonNullOf, BaseStorage, Contains, DebugFields, VTableFromMethods, Value},
+	crate::{AsNonNullOf, BaseStorage, DebugFields, ReprIs, VTableFromMethods, Value},
 	core::{
 		alloc::Layout,
 		any::{self, TypeId},
@@ -35,7 +35,7 @@ impl BaseVTable {
 	}
 
 	unsafe fn drop_storage<T: Value>(storage: NonNull<BaseStorage>) {
-		let storage_ptr = <T::Storage as Contains<BaseStorage>>::from_non_null(storage);
+		let storage_ptr = <T::Storage as ReprIs<BaseStorage>>::from_non_null(storage);
 
 		// SAFETY: We allocated a `T::Storage` in `self` that we're retrieving now.
 		//         There aren't any other references to this value currently.
@@ -43,7 +43,7 @@ impl BaseVTable {
 	}
 
 	unsafe fn debug<T: Value>(storage: NonNull<BaseStorage>, s: &mut fmt::DebugStruct<'_, '_>) {
-		let storage_ptr = <T::Storage as Contains<BaseStorage>>::from_non_null(storage);
+		let storage_ptr = <T::Storage as ReprIs<BaseStorage>>::from_non_null(storage);
 
 		// SAFETY: We allocated a `T::Storage` in `self` that we're retrieving now.
 		let storage = unsafe { storage_ptr.as_ref() };

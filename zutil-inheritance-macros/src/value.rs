@@ -389,16 +389,16 @@ fn storage(
 			}
 		}
 
-		unsafe impl #const_trait zutil_inheritance::Contains<zutil_inheritance::BaseStorage> for #storage_name
+		unsafe impl #const_trait zutil_inheritance::ReprIs<zutil_inheritance::BaseStorage> for #storage_name
 		where
 			<
 				<#name as zutil_inheritance::Value>::Parent
 				as zutil_inheritance::Value
-			>::Storage: zutil_inheritance::Contains<zutil_inheritance::BaseStorage>
+			>::Storage: zutil_inheritance::ReprIs<zutil_inheritance::BaseStorage>
 		{}
 
 		#(
-			unsafe impl #const_trait zutil_inheritance::Contains<<#parent_tys as zutil_inheritance::Value>::Storage> for #storage_name
+			unsafe impl #const_trait zutil_inheritance::ReprIs<<#parent_tys as zutil_inheritance::Value>::Storage> for #storage_name
 			{}
 		)*
 
@@ -515,16 +515,16 @@ fn vtable(
 			}
 		}
 
-		unsafe impl #const_trait zutil_inheritance::Contains<zutil_inheritance::BaseVTable> for #vtable_name
+		unsafe impl #const_trait zutil_inheritance::ReprIs<zutil_inheritance::BaseVTable> for #vtable_name
 		where
 			<
 				<#name as zutil_inheritance::Value>::Parent
 				as zutil_inheritance::Value
-			>::VTable: zutil_inheritance::Contains<zutil_inheritance::BaseVTable>
+			>::VTable: zutil_inheritance::ReprIs<zutil_inheritance::BaseVTable>
 		{}
 
 		#(
-			unsafe impl #const_trait zutil_inheritance::Contains<<#parent_tys as zutil_inheritance::Value>::VTable> for #vtable_name
+			unsafe impl #const_trait zutil_inheritance::ReprIs<<#parent_tys as zutil_inheritance::Value>::VTable> for #vtable_name
 			{}
 		)*
 

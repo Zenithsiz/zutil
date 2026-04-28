@@ -12,7 +12,7 @@ use core::{
 /// # Safety
 /// You must ensure that `Self` contains a type `T`
 /// at offset 0, with suitable alignment.
-pub const unsafe trait Contains<T>: Sized {
+pub const unsafe trait ReprIs<T>: Sized {
 	/// Casts a `NonNull<Self>` to `NonNull<T>`
 	#[must_use]
 	fn to_non_null(ptr: NonNull<Self>) -> NonNull<T> {
@@ -27,7 +27,7 @@ pub const unsafe trait Contains<T>: Sized {
 }
 
 // SAFETY: `T` always contains itself at offset 0
-unsafe impl<T> const Contains<T> for T {}
+unsafe impl<T> const ReprIs<T> for T {}
 
 /// Marker trait for types that are `repr(transparent)`
 /// over a single type `T`.
