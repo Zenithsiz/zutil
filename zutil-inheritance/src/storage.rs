@@ -2,8 +2,9 @@
 
 // Imports
 use {
-	crate::{DebugFields, StorageFromFields, ref_count::RefCount},
+	crate::{AsNonNullOf, DebugFields, StorageFromFields, ref_count::RefCount},
 	core::fmt,
+	std::ptr::NonNull,
 };
 
 /// Base storage for values
@@ -40,6 +41,12 @@ impl Default for BaseStorage {
 impl const AsRef<()> for BaseStorage {
 	fn as_ref(&self) -> &() {
 		&()
+	}
+}
+
+impl const AsNonNullOf<()> for BaseStorage {
+	fn as_non_null_of(this: NonNull<Self>) -> NonNull<()> {
+		this.cast()
 	}
 }
 

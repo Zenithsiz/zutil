@@ -2,7 +2,7 @@
 
 // Imports
 use {
-	crate::{BaseStorage, Contains, DebugFields, VTableFromMethods, Value},
+	crate::{AsNonNullOf, BaseStorage, Contains, DebugFields, VTableFromMethods, Value},
 	core::{
 		alloc::Layout,
 		any::{self, TypeId},
@@ -57,6 +57,12 @@ impl BaseVTable {
 impl const AsRef<()> for BaseVTable {
 	fn as_ref(&self) -> &() {
 		&()
+	}
+}
+
+impl const AsNonNullOf<()> for BaseVTable {
+	fn as_non_null_of(this: NonNull<Self>) -> NonNull<()> {
+		this.cast()
 	}
 }
 

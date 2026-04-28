@@ -2,7 +2,17 @@
 
 // Imports
 use {
-	crate::{BaseStorage, BaseVTable, CloneStorage, Contains, FromFields, ReprTransparent, Value, ValueFor},
+	crate::{
+		AsNonNullOf,
+		BaseStorage,
+		BaseVTable,
+		CloneStorage,
+		Contains,
+		FromFields,
+		ReprTransparent,
+		Value,
+		ValueFor,
+	},
 	core::{
 		alloc::{Allocator, Layout},
 		any::TypeId,
@@ -162,6 +172,12 @@ impl<T> ValueFor<T> for Base {}
 impl const AsRef<Self> for Base {
 	fn as_ref(&self) -> &Self {
 		self
+	}
+}
+
+impl const AsNonNullOf<Self> for Base {
+	fn as_non_null_of(this: NonNull<Self>) -> NonNull<Self> {
+		this
 	}
 }
 

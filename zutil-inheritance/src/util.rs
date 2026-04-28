@@ -82,3 +82,10 @@ pub const unsafe trait ReprTransparent<T>: Sized {
 
 // SAFETY: `T` is transparent over itself
 unsafe impl<T> const ReprTransparent<T> for T {}
+
+/// [`AsRef`] for [`NonNull`] pointers.
+pub const trait AsNonNullOf<T>: Sized {
+	/// Gets the pointer to a `T` from `Self`
+	#[must_use]
+	fn as_non_null_of(this: NonNull<Self>) -> NonNull<T>;
+}

@@ -389,6 +389,12 @@ fn storage(
 			}
 		}
 
+		impl #const_trait zutil_inheritance::AsNonNullOf<#fields_name> for #storage_name {
+			fn as_non_null_of(this: core::ptr::NonNull<Self>) -> core::ptr::NonNull<#fields_name> {
+				unsafe { this.byte_add(core::mem::offset_of!(#storage_name, fields)) }.cast::<#fields_name>()
+			}
+		}
+
 		unsafe impl #const_trait zutil_inheritance::Contains<zutil_inheritance::BaseStorage> for #storage_name
 		where
 			<
@@ -506,6 +512,12 @@ fn vtable(
 		impl #const_trait AsRef<#methods_name> for #vtable_name {
 			fn as_ref(&self) -> &#methods_name {
 				&self.methods
+			}
+		}
+
+		impl #const_trait zutil_inheritance::AsNonNullOf<#methods_name> for #vtable_name {
+			fn as_non_null_of(this: core::ptr::NonNull<Self>) -> core::ptr::NonNull<#methods_name> {
+				unsafe { this.byte_add(core::mem::offset_of!(#vtable_name, methods)) }.cast::<#methods_name>()
 			}
 		}
 
