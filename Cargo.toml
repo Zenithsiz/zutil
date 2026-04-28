@@ -1,6 +1,6 @@
 [workspace]
 
-members  = ["zutil-async-loadable", "zutil-cloned", "zutil-logger"]
+members  = ["zutil-async-loadable", "zutil-cloned", "zutil-inheritance", "zutil-inheritance-macros", "zutil-logger"]
 resolver = "2"
 
 [workspace.package]
@@ -15,13 +15,16 @@ repository = "https://github.com/zenithsiz/zutil"
 
 # Workspace members
 # TODO: Do we need to specify the version here?
-zutil-async-loadable = { path = "zutil-async-loadable", version = "0.1.0" }
-zutil-cloned         = { path = "zutil-cloned", version = "0.1.0" }
-zutil-logger         = { path = "zutil-logger", version = "0.1.0" }
+zutil-async-loadable     = { path = "zutil-async-loadable", version = "0.1.0" }
+zutil-cloned             = { path = "zutil-cloned", version = "0.1.0" }
+zutil-inheritance        = { path = "zutil-inheritance", version = "0.1.0" }
+zutil-inheritance-macros = { path = "zutil-inheritance-macros", version = "0.1.0" }
+zutil-logger             = { path = "zutil-logger", version = "0.1.0" }
 
 app-error          = "0.1.1"
 arrayref           = "0.3.9"
 ascii              = "1.1.0"
+convert_case       = "0.11.0"
 derive_more        = "2.1.1"
 duplicate          = "2.0.1"
 eframe             = "0.34.1"
@@ -34,16 +37,19 @@ mappable-rc        = "0.1.1"
 native-dialog      = "0.9.6"
 parking_lot        = "0.12.5"
 pin-project        = "1.1.11"
+proc-macro2        = "1.0.106"
 quote              = "1.0.45"
 ref-cast           = "1.0.25"
 sealed             = "0.6.0"
 serde              = "1.0.228"
 stable_deref_trait = "1.2.1"
+strum              = "0.28.0"
 syn                = "2.0.117"
 thiserror          = "2.0.18"
 tokio              = "1.52.1"
 tracing            = "0.1.44"
 tracing-subscriber = "0.3.23"
+trybuild           = "1.0.116"
 yoke               = "0.8.2"
 
 [workspace.lints]

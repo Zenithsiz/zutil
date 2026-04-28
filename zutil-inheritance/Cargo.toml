@@ -1,0 +1,15 @@
+[package]
+name    = "zutil-inheritance"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+# Workspace
+zutil-inheritance-macros = { workspace = true }
+
+[dev-dependencies]
+trybuild = { workspace = true }
+
+[lints]
+workspace = true
