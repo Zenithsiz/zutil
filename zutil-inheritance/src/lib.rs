@@ -31,7 +31,7 @@ pub use {
 		clone_storage::CloneStorage,
 		debug::DebugFields,
 		downcast::Downcast,
-		extend::{Extend, ExtendStorage},
+		extend::Extend,
 		storage::BaseStorage,
 		util::{AsNonNullOf, ReprIs, ReprTransparent},
 		value::{Value, ValueFor},

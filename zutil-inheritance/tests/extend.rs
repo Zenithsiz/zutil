@@ -55,14 +55,16 @@ zutil_inheritance::value! {
 fn extend_cloned() {
 	let a = A::default();
 	let _a2 = a.clone();
-	a.extend_with_fields(B::default_fields())
+	a.extend_with_fields::<B>(B::default_fields())
 		.expect_err("Should not be able to extend while clones exist");
 }
 
 #[test]
 fn extend() {
 	let a = A::default();
-	let _b = a.extend_with_fields(B::default_fields()).expect("Unable to extend");
+	let _b = a
+		.extend_with_fields::<B>(B::default_fields())
+		.expect("Unable to extend");
 }
 
 #[test]
@@ -70,6 +72,6 @@ fn extend_parent() {
 	let b = B::default();
 	let a = A::from(b);
 
-	a.extend_with_fields(B::default_fields())
+	a.extend_with_fields::<B>(B::default_fields())
 		.expect_err("Should not be able to extend from parent");
 }

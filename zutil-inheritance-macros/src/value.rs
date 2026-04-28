@@ -402,15 +402,6 @@ fn storage(
 			{}
 		)*
 
-		impl #const_trait zutil_inheritance::ExtendStorage<#name> for <<#name as zutil_inheritance::Value>::Parent as zutil_inheritance::Value>::Storage {
-			fn extend_with_fields(self, fields: #fields_name) -> #storage_name {
-				#storage_name {
-					parent: self,
-					fields,
-				}
-			}
-		}
-
 		impl #const_trait zutil_inheritance::StorageFromFields for #storage_name {
 			type Fields = (
 				#fields_name,

@@ -3,7 +3,7 @@
 // Imports
 use {
 	crate::{AsNonNullOf, Base, BaseStorage, BaseVTable, ReprIs, ReprTransparent},
-	core::any::TypeId,
+	core::{any::TypeId, ptr::NonNull},
 };
 
 /// A value that is part of an inheritance chain.
@@ -67,6 +67,21 @@ pub const trait Value: [const] ReprTransparent<Base> + Sized + 'static {
 		let base = Base::new::<Self>(storage);
 
 		// SAFETY: The value was created with `Self::Storage`,
+		//         and is thus valid for `Self`.
+		unsafe { Self::from_repr(base) }
+	}
+
+	/// Creates this value from it's storage pointer
+	///
+	/// # Safety
+	/// You must ensure that `storage_ptr` contains a valid instance
+	/// of `T::Storage` and was allocated with [`Global`] with the
+	/// layout of `T::Storage`.
+	unsafe fn from_storage_ptr(storage_ptr: NonNull<Self::Storage>) -> Self {
+		// SAFETY: Caller ensures `storage_ptr` invariants.
+		let base = unsafe { Base::from_storage_ptr_of::<Self>(storage_ptr) };
+
+		// SAFETY: Caller ensures the value was created with `Self::Storage`,
 		//         and is thus valid for `Self`.
 		unsafe { Self::from_repr(base) }
 	}

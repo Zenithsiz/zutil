@@ -32,10 +32,8 @@ impl Base {
 		// SAFETY: We just allocated the pointer
 		unsafe { storage_ptr.write(storage) };
 
-		let storage = ReprIs::to_non_null(storage_ptr);
-		let vtable = ReprIs::to_non_null(NonNull::from_ref(T::VTABLE));
-
-		Self { storage, vtable }
+		// SAFETY: We just allocated and initialized the pointer correctly
+		unsafe { Self::from_storage_ptr_of::<T>(storage_ptr) }
 	}
 
 	/// Gets a `&Base` from a `&impl Value`
@@ -119,7 +117,7 @@ impl Base {
 	/// `T` must be the type this value was created with.
 	/// It *cannot* be one of it's parents, else this will
 	/// return `Err`.
-	pub fn into_storage_of<T: Value>(self) -> Result<T::Storage, Self> {
+	pub fn into_storage_ptr_of<T: Value>(self) -> Result<NonNull<T::Storage>, Self> {
 		// Note: If the ref-count is unique, no more can be created since we hold
 		//       the last copy.
 		// TODO: Replace this with a decrement instead?
@@ -127,16 +125,23 @@ impl Base {
 			return Err(self);
 		}
 
-		let storage_ptr = <T::Storage as ReprIs<BaseStorage>>::from_non_null(self.storage);
-		// SAFETY: We allocated a `T::Storage` in `self` that we're retrieving now.
-		//         There aren't any other references to this value currently.
-		let storage = unsafe { storage_ptr.read() };
-
-		// SAFETY: See above. We also ensure that we don't double-free it by forgetting `self`.
-		unsafe { Global.deallocate(storage_ptr.cast(), Layout::new::<T::Storage>()) };
+		let storage = <T::Storage as ReprIs<BaseStorage>>::from_non_null(self.storage);
 		mem::forget(self);
 
 		Ok(storage)
+	}
+
+	/// Creates a base pointer from a storage pointer.
+	///
+	/// # Safety
+	/// You must ensure that `storage_ptr` contains a valid instance
+	/// of `T::Storage` and was allocated with [`Global`] with the
+	/// layout of `T::Storage`.
+	pub const unsafe fn from_storage_ptr_of<T: [const] Value>(storage_ptr: NonNull<T::Storage>) -> Self {
+		let storage = ReprIs::to_non_null(storage_ptr);
+		let vtable = ReprIs::to_non_null(NonNull::from_ref(T::VTABLE));
+
+		Self { storage, vtable }
 	}
 
 	/// Prints debug information about the value.
