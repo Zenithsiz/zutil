@@ -2,10 +2,10 @@
 
 // Imports
 use {
+	app_error::AppError,
 	futures::FutureExt,
 	std::{pin::pin, sync::Arc},
 	tokio::sync::Mutex,
-	app_error::AppError,
 	zutil_async_loadable::AsyncLoadable,
 };
 

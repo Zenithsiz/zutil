@@ -6,8 +6,8 @@
 // Imports
 use {
 	core::cell::RefCell,
-	zutil_inheritance::{CloneStorage, Downcast, FromFields, Value},
 	std::collections::HashMap,
+	zutil_inheritance::{CloneStorage, Downcast, FromFields, Value},
 };
 
 zutil_inheritance::value! {

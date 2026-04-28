@@ -4,7 +4,7 @@
 #![feature(const_trait_impl, more_qualified_paths, trivial_bounds)]
 
 // Imports
-use {zutil_inheritance::FromFields, std::thread};
+use {std::thread, zutil_inheritance::FromFields};
 
 zutil_inheritance::value! {
 	struct A(): Send + Sync {}

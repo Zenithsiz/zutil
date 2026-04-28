@@ -2,17 +2,7 @@
 
 // Imports
 use {
-	crate::{
-		AsNonNullOf,
-		BaseStorage,
-		BaseVTable,
-		CloneStorage,
-		ReprIs,
-		FromFields,
-		ReprTransparent,
-		Value,
-		ValueFor,
-	},
+	crate::{AsNonNullOf, BaseStorage, BaseVTable, CloneStorage, FromFields, ReprIs, ReprTransparent, Value, ValueFor},
 	core::{
 		alloc::{Allocator, Layout},
 		any::TypeId,
