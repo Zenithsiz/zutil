@@ -241,12 +241,6 @@ pub fn def(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 			}
 		}
 
-		impl #const_trait AsRef<zutil_inheritance::Base> for #name {
-			fn as_ref(&self) -> &zutil_inheritance::Base {
-				zutil_inheritance::ReprTransparent::to_ref(self)
-			}
-		}
-
 		impl #const_trait From<#name> for zutil_inheritance::Base {
 			fn from(value: #name) -> zutil_inheritance::Base {
 				zutil_inheritance::ReprTransparent::into_repr(value)

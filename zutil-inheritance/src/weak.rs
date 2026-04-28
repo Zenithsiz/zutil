@@ -17,7 +17,7 @@ pub struct WeakValue<T> {
 impl<T: Value> WeakValue<T> {
 	/// Creates a weak reference to a value
 	pub fn new(value: &T) -> Self {
-		let base = value.as_ref();
+		let base = T::to_ref(value);
 
 		base.storage().ref_count.inc_weak();
 		Self {
@@ -86,7 +86,7 @@ impl<T> PartialEq for WeakValue<T> {
 
 impl<T: Value> PartialEq<T> for WeakValue<T> {
 	fn eq(&self, other: &T) -> bool {
-		self.storage == other.as_ref().storage
+		self.storage == T::to_ref(other).storage
 	}
 }
 
