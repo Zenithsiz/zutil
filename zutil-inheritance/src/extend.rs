@@ -4,7 +4,7 @@
 use {
 	crate::{AsNonNullOf, Base, ReprTransparent, Value},
 	core::alloc::Layout,
-	std::alloc::{Allocator, Global},
+	std::alloc::{AllocError, Allocator, Global},
 };
 
 /// Extends this object to include a parent
@@ -28,7 +28,7 @@ impl<T: Value> Extend for T {
 		//         of `U::Fields`.
 		let storage_ptr = match unsafe { Global.grow(storage_ptr.cast(), old_layout, new_layout) } {
 			Ok(ptr) => ptr.cast::<U::Storage>(),
-			Err(_) => panic!("Unable to re-allocate storage"),
+			Err(AllocError) => panic!("Unable to re-allocate storage"),
 		};
 
 		let storage_fields = AsNonNullOf::<U::Fields>::as_non_null_of(storage_ptr);

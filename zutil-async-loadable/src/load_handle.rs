@@ -32,7 +32,7 @@ pub struct LoadHandle<T: 'static> {
 
 impl<T> LoadHandle<T> {
 	/// Creates the loader handle
-	fn new(inner: LoaderHandleInner<T>) -> Self {
+	const fn new(inner: LoaderHandleInner<T>) -> Self {
 		Self {
 			inner,
 			abort_on_drop: true,
@@ -40,12 +40,12 @@ impl<T> LoadHandle<T> {
 	}
 
 	/// Creates a loader handle from a task
-	pub(crate) fn from_task(task: task::JoinHandle<ResArcGuard<T>>) -> Self {
+	pub(crate) const fn from_task(task: task::JoinHandle<ResArcGuard<T>>) -> Self {
 		Self::new(LoaderHandleInner::Task(task))
 	}
 
 	/// Creates a loader handle from a loaded value
-	pub(crate) fn from_loaded(res: ResArcGuard<T>) -> Self {
+	pub(crate) const fn from_loaded(res: ResArcGuard<T>) -> Self {
 		Self::new(LoaderHandleInner::Loaded(res))
 	}
 
@@ -53,6 +53,7 @@ impl<T> LoadHandle<T> {
 	/// future is dropped.
 	///
 	/// By default, this is `true`
+	#[must_use]
 	pub fn with_abort_on_drop(self, abort_on_drop: bool) -> Self {
 		Self { abort_on_drop, ..self }
 	}

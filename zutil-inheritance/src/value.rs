@@ -77,6 +77,7 @@ pub const trait Value: [const] ReprTransparent<Base> + Sized + 'static {
 	/// You must ensure that `storage_ptr` contains a valid instance
 	/// of `T::Storage` and was allocated with [`Global`] with the
 	/// layout of `T::Storage`.
+	#[must_use]
 	unsafe fn from_storage_ptr(storage_ptr: NonNull<Self::Storage>) -> Self {
 		// SAFETY: Caller ensures `storage_ptr` invariants.
 		let base = unsafe { Base::from_storage_ptr_of::<Self>(storage_ptr) };

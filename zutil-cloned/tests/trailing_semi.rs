@@ -19,7 +19,7 @@ fn trailing_semi() {
 		a
 	};
 
-	#[expect(path_statements)]
+	#[expect(path_statements, clippy::semicolon_if_nothing_returned)]
 	let _: () = {
 		// TODO: Not require trailing `;` once `stmt_expr_attributes` lets us
 		//       parse the trailing semicolon ourselves
@@ -27,6 +27,7 @@ fn trailing_semi() {
 		a;
 	};
 
+	#[expect(clippy::semicolon_if_nothing_returned)]
 	let _: () = {
 		#[cloned(a;)]
 		call(a);

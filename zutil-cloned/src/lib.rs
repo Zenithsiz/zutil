@@ -57,7 +57,7 @@ pub fn cloned(attr: TokenStream, input: TokenStream) -> TokenStream {
 
 		// Normal expressions are the only place we need the user to tell us whether to use a semi or not
 		Input::Expr { expr } => wrap_expr(expr, attrs.semi),
-	};
+	}
 
 	// Then output it.
 	let output = match input {

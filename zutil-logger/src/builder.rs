@@ -36,6 +36,7 @@ pub struct LoggerBuilder<W, S> {
 
 impl LoggerBuilder<fn() -> io::Stderr, LoggerSubscriber> {
 	/// Creates a new builder
+	#[must_use]
 	pub fn new() -> Self {
 		// Create the pre-init logger to log everything until we have our loggers running.
 		let pre_init_logger = PreInitLogger::new();
@@ -69,35 +70,41 @@ impl<W, S> LoggerBuilder<W, S> {
 	}
 
 	/// Sets the default stderr filter
+	#[must_use]
 	pub fn stderr_filter_default(mut self, filter: &str) -> Self {
 		self.stderr_filters.insert(None, filter.to_owned());
 		self
 	}
 
 	/// Sets a stderr filter
+	#[must_use]
 	pub fn stderr_filter(mut self, key: &str, filter: &str) -> Self {
 		self.stderr_filters.insert(Some(key.to_owned()), filter.to_owned());
 		self
 	}
 
 	/// Sets the default file filter
+	#[must_use]
 	pub fn file_filter_default(mut self, filter: &str) -> Self {
 		self.file_filters.insert(None, filter.to_owned());
 		self
 	}
 
 	/// Sets a file filter
+	#[must_use]
 	pub fn file_filter(mut self, key: &str, filter: &str) -> Self {
 		self.file_filters.insert(Some(key.to_owned()), filter.to_owned());
 		self
 	}
 
 	/// Sets a filter for both the stderr and file layers
+	#[must_use]
 	pub fn filter(self, key: &str, filter: &str) -> Self {
 		self.stderr_filter(key, filter).file_filter(key, filter)
 	}
 
 	/// Builds the logger
+	#[must_use]
 	pub fn build(self) -> Logger
 	where
 		W: for<'a> MakeWriter<'a> + Clone + Send + Sync + 'static,
@@ -116,13 +123,12 @@ impl<W, S> LoggerBuilder<W, S> {
 		}
 
 		// Finally write the pre-init output to our writes
-		self.pre_init_logger
-			.into_output()
-			.with_bytes(|bytes| {
-				self.stderr.make_writer().write_all(bytes)?;
-				file_writer.make_writer().write_all(bytes)
-			})
-			.expect("Unable to write pre-init output");
+		if let Err(err) = self.pre_init_logger.into_output().with_bytes(|bytes| {
+			self.stderr.make_writer().write_all(bytes)?;
+			file_writer.make_writer().write_all(bytes)
+		}) {
+			tracing::warn!("Unable to write pre-init output: {err:?}");
+		}
 
 		tracing::info!("Successfully initialized logger");
 

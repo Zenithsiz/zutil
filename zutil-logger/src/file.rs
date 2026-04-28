@@ -37,7 +37,7 @@ impl FileWriter {
 		if let FileWriterKind::Memory(bytes) = &*kind &&
 			let Err(err) = file.write_all(bytes)
 		{
-			tracing::warn!("Unable to write to log file: {err}")
+			tracing::warn!("Unable to write to log file: {err}");
 		}
 
 		*kind = FileWriterKind::File(file);

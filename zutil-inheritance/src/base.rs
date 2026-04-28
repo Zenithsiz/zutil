@@ -21,6 +21,9 @@ pub struct Base {
 
 impl Base {
 	/// Creates a value from it's storage.
+	///
+	/// # Panics
+	/// Panics if unable to allocate memory.
 	pub const fn new<T>(storage: T::Storage) -> Self
 	where
 		T: [const] Value,

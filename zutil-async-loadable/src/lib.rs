@@ -87,6 +87,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	/// Clone this async loadable by reference-count.
 	///
 	/// The returned loadable shares the same state as this one
+	#[must_use]
 	pub fn clone_rc(&self) -> Self {
 		Self {
 			inner: Arc::clone(&self.inner),
@@ -94,6 +95,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	}
 
 	/// Gets the value of the loadable.
+	#[must_use]
 	pub fn get(&self) -> Option<Result<T, AppError>>
 	where
 		T: Clone,
@@ -135,6 +137,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	/// Resets the currently loaded value.
 	///
 	/// Returns the old value, if any.
+	#[must_use]
 	pub fn reset(&self) -> Option<Result<T, AppError>> {
 		self.inner.res.lock().take()
 	}
@@ -142,6 +145,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	/// Gets the progress of the loadable.
 	///
 	/// If the progress is currently being updated, returns `None`
+	#[must_use]
 	pub fn progress(&self) -> Option<P>
 	where
 		P: Clone,
@@ -150,6 +154,7 @@ impl<T, P> AsyncLoadable<T, P> {
 	}
 
 	/// Returns if the value is loading.
+	#[must_use]
 	pub fn is_loading(&self) -> bool {
 		self.inner
 			.task_handle

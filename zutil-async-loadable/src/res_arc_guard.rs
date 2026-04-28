@@ -47,7 +47,7 @@ pub struct ResArcGuard<T: 'static>(Yoke<ResGuard<'static, T>, ResMarc<T>>);
 
 impl<T> ResArcGuard<T> {
 	/// Creates an arc guard to the result.
-	pub fn new<P>(inner: Arc<Inner<T, P>>) -> ResArcGuard<T>
+	pub fn new<P>(inner: Arc<Inner<T, P>>) -> Self
 	where
 		T: Send,
 		P: Send + 'static,
@@ -57,6 +57,7 @@ impl<T> ResArcGuard<T> {
 	}
 
 	/// Gets the inner result
+	#[expect(clippy::ref_option, reason = "We want to expose a `Res` directly")]
 	pub fn get(&self) -> &Res<T> {
 		&self.0.get().0
 	}

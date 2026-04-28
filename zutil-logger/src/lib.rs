@@ -39,11 +39,13 @@ pub struct Logger {
 
 impl Logger {
 	/// Creates a default logger
+	#[must_use]
 	pub fn new() -> Self {
 		Self::builder().build()
 	}
 
 	/// Creates a builder for the logger
+	#[must_use]
 	pub fn builder() -> LoggerBuilder<fn() -> io::Stderr, LoggerSubscriber> {
 		LoggerBuilder::new()
 	}
@@ -61,7 +63,7 @@ impl Logger {
 				},
 				Err(err) => {
 					tracing::warn!("Unable to create log file {path:?}: {err}");
-					self.file_writer.set_empty()
+					self.file_writer.set_empty();
 				},
 			},
 			None => self.file_writer.set_empty(),
