@@ -66,9 +66,10 @@ clippy.multiple_unsafe_ops_per_block = "warn"
 clippy.undocumented_unsafe_blocks    = "warn"
 
 # Style
-clippy.match_bool         = "allow"
-clippy.option_if_let_else = "allow"
-clippy.single_match_else  = "allow"
+clippy.match_bool           = "allow"
+clippy.option_if_let_else   = "allow"
+clippy.single_match_else    = "allow"
+clippy.tabs_in_doc_comments = "allow"
 
 # Misc.
 clippy.missing_errors_doc     = "allow"

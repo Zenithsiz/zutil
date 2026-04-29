@@ -1,4 +1,31 @@
-//! Inheritance for `dynatos`
+//! Inheritance.
+//!
+//! Implements an inheritance system in rust.
+//!
+//! See the [`value`] macro for details on how to create new
+//! types in an inheritance chain.
+//!
+//! # Examples
+//!
+//! ```rust
+//! #![feature(const_trait_impl, trivial_bounds, more_qualified_paths)]
+//!
+//! zutil_inheritance::value! {
+//! 	struct Parent() {}
+//! 	impl Self {}
+//! }
+//!
+//! zutil_inheritance::value! {
+//! 	struct Child(Parent) {}
+//! 	impl Self {}
+//! }
+//!
+//! use zutil_inheritance::{FromFields, Downcast};
+//!
+//! let child = Child::from_fields((ChildFields {}, ParentFields {}));
+//! let child_as_parent = Parent::from(child);
+//! let child = child_as_parent.downcast::<Child>().expect("Should be a `Child`");
+//! ```
 
 // Features
 #![feature(
