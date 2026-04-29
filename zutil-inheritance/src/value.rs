@@ -58,7 +58,7 @@ pub const trait Value: [const] ReprTransparent<Inner = Base> + Sized + 'static {
 	fn vtable(&self) -> &'static Self::VTable {
 		let base = Base::from_value_ref(self);
 
-		// SAFETY: `Self` always has a valid `Self::Storage`.
+		// SAFETY: `Self` always has a valid `Self::VTable`.
 		unsafe { base.vtable_of::<Self>() }
 	}
 
