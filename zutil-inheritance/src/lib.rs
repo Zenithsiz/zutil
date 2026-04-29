@@ -8,7 +8,7 @@
 //! # Examples
 //!
 //! ```rust
-//! #![feature(const_trait_impl, trivial_bounds, more_qualified_paths)]
+//! #![feature(const_trait_impl, trivial_bounds, more_qualified_paths, macro_derive)]
 //!
 //! zutil_inheritance::value! {
 //! 	struct Parent() {}
@@ -35,7 +35,8 @@
 	const_cmp,
 	const_clone,
 	allocator_api,
-	try_as_dyn
+	try_as_dyn,
+	macro_derive
 )]
 
 // Modules

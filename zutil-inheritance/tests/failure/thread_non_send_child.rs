@@ -6,7 +6,8 @@
 	const_cmp,
 	more_qualified_paths,
 	trivial_bounds,
-	unsize
+	unsize,
+	macro_derive
 )]
 
 // Imports

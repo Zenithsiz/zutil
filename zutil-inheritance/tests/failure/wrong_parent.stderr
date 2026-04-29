@@ -1,21 +1,21 @@
 error[E0308]: mismatched types
-  --> tests/failure/wrong_parent.rs:27:1
+  --> tests/failure/wrong_parent.rs:28:1
    |
-27 | / zutil_inheritance::value! {
-28 | |     struct D(B, C) {}
-29 | |     impl Self {}
-30 | | }
+28 | / zutil_inheritance::value! {
+29 | |     struct D(B, C) {}
+30 | |     impl Self {}
+31 | | }
    | |_^ expected `AFields`, found `CFields`
    |
    = note: this error originates in the macro `zutil_inheritance::value` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0308]: mismatched types
-  --> tests/failure/wrong_parent.rs:27:1
+  --> tests/failure/wrong_parent.rs:28:1
    |
-27 | / zutil_inheritance::value! {
-28 | |     struct D(B, C) {}
-29 | |     impl Self {}
-30 | | }
+28 | / zutil_inheritance::value! {
+29 | |     struct D(B, C) {}
+30 | |     impl Self {}
+31 | | }
    | |_^ expected `AMethods`, found `CMethods`
    |
    = note: this error originates in the macro `zutil_inheritance::value` (in Nightly builds, run with -Z macro-backtrace for more info)

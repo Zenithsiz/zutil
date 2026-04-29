@@ -41,12 +41,12 @@ impl Base {
 
 	/// Gets a `&Base` from a `&impl Value`
 	pub const fn from_value_ref<T: [const] Value>(value: &T) -> &Self {
-		<T as ReprTransparent<Self>>::to_ref(value)
+		<T as ReprTransparent>::to_ref(value)
 	}
 
 	/// Gets a `Base` from a `impl Value`
 	pub const fn from_value<T: [const] Value>(value: T) -> Self {
-		<T as ReprTransparent<Self>>::into_repr(value)
+		<T as ReprTransparent>::into_repr(value)
 	}
 
 	/// Returns if this type is exactly a `T`.
@@ -152,6 +152,11 @@ impl Base {
 		// SAFETY: The storage is valid.
 		unsafe { (self.vtable().debug)(self.storage, s) };
 	}
+}
+
+// SAFETY: A type is always `repr(transparent)` over itself.
+unsafe impl const ReprTransparent for Base {
+	type Inner = Self;
 }
 
 impl const Value for Base {

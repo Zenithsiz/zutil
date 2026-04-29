@@ -1,7 +1,14 @@
 //! Const tests
 
 // Features
-#![feature(const_trait_impl, const_clone, more_qualified_paths, trivial_bounds, const_convert)]
+#![feature(
+	const_trait_impl,
+	const_clone,
+	more_qualified_paths,
+	trivial_bounds,
+	const_convert,
+	macro_derive
+)]
 
 // Imports
 use zutil_inheritance::{CloneStorage, Downcast, FromFields};

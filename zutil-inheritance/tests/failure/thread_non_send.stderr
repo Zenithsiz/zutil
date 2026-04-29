@@ -1,31 +1,31 @@
 error[E0277]: `NonNull<BaseStorage>` cannot be sent between threads safely
-  --> tests/failure/thread_non_send.rs:26:16
+  --> tests/failure/thread_non_send.rs:27:16
    |
-26 |       thread::spawn(move || {
+27 |       thread::spawn(move || {
    |       ------------- ^------
    |       |             |
-   |  _____|_____________within this `{closure@$DIR/tests/failure/thread_non_send.rs:26:16: 26:23}`
+   |  _____|_____________within this `{closure@$DIR/tests/failure/thread_non_send.rs:27:16: 27:23}`
    | |     |
    | |     required by a bound introduced by this call
-27 | |         let _ = a.fields().a.borrow_mut();
-28 | |     });
+28 | |         let _ = a.fields().a.borrow_mut();
+29 | |     });
    | |_____^ `NonNull<BaseStorage>` cannot be sent between threads safely
    |
-   = help: within `{closure@$DIR/tests/failure/thread_non_send.rs:26:16: 26:23}`, the trait `Send` is not implemented for `NonNull<BaseStorage>`
+   = help: within `{closure@$DIR/tests/failure/thread_non_send.rs:27:16: 27:23}`, the trait `Send` is not implemented for `NonNull<BaseStorage>`
 note: required because it appears within the type `Base`
   --> src/base.rs
    |
    | pub struct Base {
    |            ^^^^
 note: required because it appears within the type `A`
-  --> tests/failure/thread_non_send.rs:19:9
+  --> tests/failure/thread_non_send.rs:20:9
    |
-19 |     struct A() {
+20 |     struct A() {
    |            ^
 note: required because it's used within this closure
-  --> tests/failure/thread_non_send.rs:26:16
+  --> tests/failure/thread_non_send.rs:27:16
    |
-26 |     thread::spawn(move || {
+27 |     thread::spawn(move || {
    |                   ^^^^^^^
 note: required by a bound in `spawn`
   --> $RUST/std/src/thread/functions.rs
@@ -37,33 +37,33 @@ note: required by a bound in `spawn`
    |        ^^^^ required by this bound in `spawn`
 
 error[E0277]: `NonNull<BaseVTable>` cannot be sent between threads safely
-  --> tests/failure/thread_non_send.rs:26:16
+  --> tests/failure/thread_non_send.rs:27:16
    |
-26 |       thread::spawn(move || {
+27 |       thread::spawn(move || {
    |       ------------- ^------
    |       |             |
-   |  _____|_____________within this `{closure@$DIR/tests/failure/thread_non_send.rs:26:16: 26:23}`
+   |  _____|_____________within this `{closure@$DIR/tests/failure/thread_non_send.rs:27:16: 27:23}`
    | |     |
    | |     required by a bound introduced by this call
-27 | |         let _ = a.fields().a.borrow_mut();
-28 | |     });
+28 | |         let _ = a.fields().a.borrow_mut();
+29 | |     });
    | |_____^ `NonNull<BaseVTable>` cannot be sent between threads safely
    |
-   = help: within `{closure@$DIR/tests/failure/thread_non_send.rs:26:16: 26:23}`, the trait `Send` is not implemented for `NonNull<BaseVTable>`
+   = help: within `{closure@$DIR/tests/failure/thread_non_send.rs:27:16: 27:23}`, the trait `Send` is not implemented for `NonNull<BaseVTable>`
 note: required because it appears within the type `Base`
   --> src/base.rs
    |
    | pub struct Base {
    |            ^^^^
 note: required because it appears within the type `A`
-  --> tests/failure/thread_non_send.rs:19:9
+  --> tests/failure/thread_non_send.rs:20:9
    |
-19 |     struct A() {
+20 |     struct A() {
    |            ^
 note: required because it's used within this closure
-  --> tests/failure/thread_non_send.rs:26:16
+  --> tests/failure/thread_non_send.rs:27:16
    |
-26 |     thread::spawn(move || {
+27 |     thread::spawn(move || {
    |                   ^^^^^^^
 note: required by a bound in `spawn`
   --> $RUST/std/src/thread/functions.rs

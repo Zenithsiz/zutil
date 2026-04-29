@@ -1,7 +1,7 @@
 //! Thread tests
 
 // Features
-#![feature(const_trait_impl, more_qualified_paths, trivial_bounds)]
+#![feature(const_trait_impl, more_qualified_paths, trivial_bounds, macro_derive)]
 
 // Imports
 use {std::thread, zutil_inheritance::FromFields};

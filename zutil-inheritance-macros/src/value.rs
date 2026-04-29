@@ -140,7 +140,7 @@ pub fn def(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 				let mut s = f.debug_struct(stringify!(#name));
 
 				// SAFETY: The storage is valid.
-				let base = zutil_inheritance::ReprTransparent::<zutil_inheritance::Base>::to_ref(self);
+				let base = zutil_inheritance::ReprTransparent::to_ref(self);
 				base.fmt_debug(&mut s);
 
 				s.finish()
@@ -161,10 +161,9 @@ pub fn def(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 		#vtable_impls
 
 		#[derive(PartialEq, Eq, Clone)]
+		#[derive(zutil_inheritance::ReprTransparent)]
 		#[repr(transparent)]
 		#vis struct #name(zutil_inheritance::Base);
-
-		unsafe impl #const_trait zutil_inheritance::ReprTransparent<zutil_inheritance::Base> for #name {}
 
 		#send_impl
 		#sync_impl
@@ -251,14 +250,14 @@ pub fn def(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 			impl #const_trait AsRef<#parent_tys> for #name {
 				fn as_ref(&self) -> &#parent_tys {
 					let ptr = zutil_inheritance::ReprTransparent::to_ref(self);
-					unsafe { <#parent_tys as zutil_inheritance::ReprTransparent<zutil_inheritance::Base>>::from_ref(ptr) }
+					unsafe { <#parent_tys as zutil_inheritance::ReprTransparent>::from_ref(ptr) }
 				}
 			}
 
 			impl #const_trait From<#name> for #parent_tys {
 				fn from(value: #name) -> #parent_tys {
 					let ptr = zutil_inheritance::ReprTransparent::into_repr(value);
-					unsafe { <#parent_tys as zutil_inheritance::ReprTransparent<zutil_inheritance::Base>>::from_repr(ptr) }
+					unsafe { <#parent_tys as zutil_inheritance::ReprTransparent>::from_repr(ptr) }
 				}
 			}
 		)*
@@ -641,8 +640,8 @@ impl Method {
 
 		Some(syn::parse_quote! {
 			#fn_name: |this, #( #arg_idents: #arg_tys, )*| {
-				let base = zutil_inheritance::ReprTransparent::<zutil_inheritance::Base>::to_ref(this);
-				let this = unsafe { <#name as zutil_inheritance::ReprTransparent<zutil_inheritance::Base>>::from_ref(base) };
+				let base = zutil_inheritance::ReprTransparent::to_ref(this);
+				let this = unsafe { <#name as zutil_inheritance::ReprTransparent>::from_ref(base) };
 
 				#name::#impl_name(
 					this,
@@ -664,8 +663,8 @@ impl Method {
 
 		Some(syn::parse_quote! {
 			#fn_name: |this, #( #arg_idents: #arg_tys, )*| {
-				let base = zutil_inheritance::ReprTransparent::<zutil_inheritance::Base>::to_ref(this);
-				let this = unsafe { <#name as zutil_inheritance::ReprTransparent<zutil_inheritance::Base>>::from_ref(base) };
+				let base = zutil_inheritance::ReprTransparent::to_ref(this);
+				let this = unsafe { <#name as zutil_inheritance::ReprTransparent>::from_ref(base) };
 
 				#name::#impl_name(
 					this,

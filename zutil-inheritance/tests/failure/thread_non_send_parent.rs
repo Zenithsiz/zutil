@@ -6,13 +6,14 @@
 	const_cmp,
 	more_qualified_paths,
 	trivial_bounds,
-	unsize
+	unsize,
+	macro_derive
 )]
 
 // Imports
 use {
-	zutil_inheritance::Value,
 	std::{cell::RefCell, thread},
+	zutil_inheritance::Value,
 };
 
 zutil_inheritance::value! {

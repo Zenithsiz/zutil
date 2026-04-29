@@ -1,7 +1,7 @@
 //! Extension
 
 // Features
-#![feature(const_trait_impl, more_qualified_paths, trivial_bounds)]
+#![feature(const_trait_impl, more_qualified_paths, trivial_bounds, macro_derive)]
 
 // Imports
 use zutil_inheritance::{Extend, FromFields, Value};

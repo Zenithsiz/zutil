@@ -1,7 +1,7 @@
 //! Default tests
 
 // Features
-#![feature(const_trait_impl, more_qualified_paths, trivial_bounds)]
+#![feature(const_trait_impl, more_qualified_paths, trivial_bounds, macro_derive)]
 
 zutil_inheritance::value! {
 	struct A(): Default {}
