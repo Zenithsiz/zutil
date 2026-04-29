@@ -1,42 +1,42 @@
 error[E0308]: mismatched types
-  --> tests/failure/missing_parent.rs:23:1
+  --> tests/failure/too_many_parents.rs:28:1
    |
-23 | / zutil_inheritance::value! {
-24 | |     struct C(B) {}
-25 | |     impl Self {}
-26 | | }
+28 | / zutil_inheritance::value! {
+29 | |     struct D(B, A, C) {}
+30 | |     impl Self {}
+31 | | }
    | | ^
    | | |
-   | | expected a tuple with 2 elements, found one with 1 element
+   | | expected a tuple with 2 elements, found one with 3 elements
    | |_arguments to this function are incorrect
    |   this return type influences the call expression's return type
    |
    = note: expected tuple `(BFields, AFields)`
-              found tuple `(BFields,)`
+              found tuple `(BFields, AFields, CFields)`
 note: associated function defined here
-  --> src/lib.rs
+  --> $WORKSPACE/zutil-inheritance/src/lib.rs
    |
    |     fn from_fields(base: BaseStorage, fields: Self::Fields) -> Self;
    |        ^^^^^^^^^^^
    = note: this error originates in the macro `zutil_inheritance::value` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0308]: mismatched types
-  --> tests/failure/missing_parent.rs:23:1
+  --> tests/failure/too_many_parents.rs:28:1
    |
-23 | / zutil_inheritance::value! {
-24 | |     struct C(B) {}
-25 | |     impl Self {}
-26 | | }
+28 | / zutil_inheritance::value! {
+29 | |     struct D(B, A, C) {}
+30 | |     impl Self {}
+31 | | }
    | | ^
    | | |
-   | | expected a tuple with 2 elements, found one with 1 element
+   | | expected a tuple with 2 elements, found one with 3 elements
    | |_arguments to this function are incorrect
    |   this return type influences the call expression's return type
    |
    = note: expected tuple `(BMethods, AMethods)`
-              found tuple `(BMethods,)`
+              found tuple `(BMethods, AMethods, CMethods)`
 note: associated function defined here
-  --> src/lib.rs
+  --> $WORKSPACE/zutil-inheritance/src/lib.rs
    |
    |     fn from_methods(base: BaseVTable, methods: Self::Methods) -> Self;
    |        ^^^^^^^^^^^^

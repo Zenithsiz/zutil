@@ -1,6 +1,13 @@
 [workspace]
 
-members  = ["zutil-async-loadable", "zutil-cloned", "zutil-inheritance", "zutil-inheritance-macros", "zutil-logger"]
+members = [
+	"tests/zutil-inheritance-derive",
+	"zutil-async-loadable",
+	"zutil-cloned",
+	"zutil-inheritance",
+	"zutil-inheritance-macros",
+	"zutil-logger",
+]
 resolver = "2"
 
 [workspace.package]

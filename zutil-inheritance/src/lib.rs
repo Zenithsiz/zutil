@@ -7,7 +7,8 @@
 //!
 //! # Examples
 //!
-//! ```rust
+// TODO: This test shouldn't be ignored, just because we need the `derive` feature.
+//! ```rust,ignore
 //! #![feature(const_trait_impl, trivial_bounds, more_qualified_paths, macro_derive)]
 //!
 //! zutil_inheritance::value! {
@@ -53,21 +54,20 @@ mod vtable;
 mod weak;
 
 // Exports
-pub use {
-	self::{
-		base::Base,
-		clone_storage::CloneStorage,
-		debug::DebugFields,
-		downcast::Downcast,
-		extend::Extend,
-		storage::BaseStorage,
-		util::{AsNonNullOf, ReprIs, ReprTransparent},
-		value::{Value, ValueFor},
-		vtable::BaseVTable,
-		weak::{ValueDowngrade, WeakValue},
-	},
-	zutil_inheritance_macros::value,
+pub use self::{
+	base::Base,
+	clone_storage::CloneStorage,
+	debug::DebugFields,
+	downcast::Downcast,
+	extend::Extend,
+	storage::BaseStorage,
+	util::{AsNonNullOf, ReprIs, ReprTransparent},
+	value::{Value, ValueFor},
+	vtable::BaseVTable,
+	weak::{ValueDowngrade, WeakValue},
 };
+#[cfg(feature = "derive")]
+pub use zutil_inheritance_macros::value;
 
 /// Creates a value from it's fields.
 pub const trait FromFields {

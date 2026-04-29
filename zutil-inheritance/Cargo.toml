@@ -6,10 +6,10 @@ edition = "2024"
 [dependencies]
 
 # Workspace
-zutil-inheritance-macros = { workspace = true }
+zutil-inheritance-macros = { optional = true, workspace = true }
 
-[dev-dependencies]
-trybuild = { workspace = true }
+[features]
+derive = ["dep:zutil-inheritance-macros"]
 
 [lints]
 workspace = true

@@ -43,7 +43,7 @@ note: required for `A` to implement `ValueFor<B>`
 20 | | }
    | |_^
 note: required by a bound in `zutil_inheritance::Value::Parent`
-  --> src/value.rs
+  --> $WORKSPACE/zutil-inheritance/src/value.rs
    |
    |     type Parent: ValueFor<Self>;
    |                  ^^^^^^^^^^^^^^ required by this bound in `Value::Parent`
