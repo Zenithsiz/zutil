@@ -2,7 +2,7 @@
 //!
 //! Implements an inheritance system in rust.
 //!
-//! See the [`value`] macro for details on how to create new
+//! See the [`value!`] macro for details on how to create new
 //! types in an inheritance chain.
 //!
 //! # Examples

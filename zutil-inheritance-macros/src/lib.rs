@@ -1,4 +1,4 @@
-//! Macros for [`zutil_inheritance`]
+//! Macros for `zutil_inheritance`
 
 // Modules
 mod value;
