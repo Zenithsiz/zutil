@@ -152,7 +152,7 @@ impl<W, S> LoggerBuilder<W, S> {
 			tracing::warn!("Unable to write pre-init output: {err:?}");
 		}
 
-		tracing::info!("Successfully initialized logger");
+		tracing::debug!("Successfully initialized logger");
 
 		Logger { file_writer }
 	}

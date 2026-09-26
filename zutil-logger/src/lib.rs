@@ -70,7 +70,7 @@ impl Logger {
 			Some(path) => match fs::File::create(path) {
 				Ok(file) => {
 					self.file_writer.set_file(file);
-					tracing::info!("Logging to file: {path:?}");
+					tracing::debug!("Logging to file: {path:?}");
 				},
 				Err(err) => {
 					tracing::warn!("Unable to create log file {path:?}: {err}");
