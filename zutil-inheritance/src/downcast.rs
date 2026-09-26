@@ -12,7 +12,7 @@ pub const trait Downcast: Value {
 	fn downcast_ref<T: [const] Value>(&self) -> Option<&T>;
 }
 
-impl<T: [const] Value> const Downcast for T {
+const impl<T: [const] Value> Downcast for T {
 	fn downcast<U: [const] Value>(self) -> Result<U, Self> {
 		let base = Base::from_value(self);
 		match base.is::<U>() || base.has_parent::<U>() {

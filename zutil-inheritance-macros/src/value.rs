@@ -184,7 +184,7 @@ pub fn def(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 			)*
 		}
 
-		impl #const_trait zutil_inheritance::Value for #name {
+		#const_trait impl zutil_inheritance::Value for #name {
 			type Fields = #fields_name;
 			type Methods = #methods_name;
 
@@ -202,7 +202,7 @@ pub fn def(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
 		impl<T: #value_for_bounds> zutil_inheritance::ValueFor<T> for #name {}
 
-		impl #const_trait zutil_inheritance::FromFields for #name {
+		#const_trait impl zutil_inheritance::FromFields for #name {
 			type Fields = (
 				#fields_name,
 				#( <#parent_tys as zutil_inheritance::Value>::Fields, )*
@@ -218,7 +218,7 @@ pub fn def(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 			}
 		}
 
-		impl #const_trait zutil_inheritance::CloneStorage for #name
+		#const_trait impl zutil_inheritance::CloneStorage for #name
 		where
 			#fields_name: Clone,
 			#( <#parent_tys as zutil_inheritance::Value>::Fields: Clone, )*
@@ -240,21 +240,21 @@ pub fn def(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 			}
 		}
 
-		impl #const_trait From<#name> for zutil_inheritance::Base {
+		#const_trait impl From<#name> for zutil_inheritance::Base {
 			fn from(value: #name) -> zutil_inheritance::Base {
 				zutil_inheritance::ReprTransparent::into_repr(value)
 			}
 		}
 
 		#(
-			impl #const_trait AsRef<#parent_tys> for #name {
+			#const_trait impl AsRef<#parent_tys> for #name {
 				fn as_ref(&self) -> &#parent_tys {
 					let ptr = zutil_inheritance::ReprTransparent::to_ref(self);
 					unsafe { <#parent_tys as zutil_inheritance::ReprTransparent>::from_ref(ptr) }
 				}
 			}
 
-			impl #const_trait From<#name> for #parent_tys {
+			#const_trait impl From<#name> for #parent_tys {
 				fn from(value: #name) -> #parent_tys {
 					let ptr = zutil_inheritance::ReprTransparent::into_repr(value);
 					unsafe { <#parent_tys as zutil_inheritance::ReprTransparent>::from_repr(ptr) }
@@ -262,13 +262,13 @@ pub fn def(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 			}
 		)*
 
-		impl #const_trait AsRef<#name> for #name {
+		#const_trait impl AsRef<#name> for #name {
 			fn as_ref(&self) -> &#name {
 				self
 			}
 		}
 
-		impl #const_trait std::ops::Deref for #name {
+		#const_trait impl std::ops::Deref for #name {
 			type Target = #first_parent_ty;
 
 			fn deref(&self) -> &Self::Target {
@@ -312,7 +312,7 @@ fn storage(
 	let mut extra_impls = vec![];
 	if storage_impls.clone {
 		extra_impls.push(quote::quote! {
-			impl #const_trait Clone for #fields_name {
+			#const_trait impl Clone for #fields_name {
 				fn clone(&self) -> Self {
 					Self {
 						#( #fields: self.#fields.clone(), )*
@@ -320,7 +320,7 @@ fn storage(
 				}
 			}
 
-			impl #const_trait Clone for #storage_name {
+			#const_trait impl Clone for #storage_name {
 				fn clone(&self) -> Self {
 					Self {
 						parent: self.parent.clone(),
@@ -376,19 +376,19 @@ fn storage(
 		#debug_fields_impl
 		#( #extra_impls )*
 
-		impl #const_trait AsRef<#fields_name> for #storage_name {
+		#const_trait impl AsRef<#fields_name> for #storage_name {
 			fn as_ref(&self) -> &#fields_name {
 				&self.fields
 			}
 		}
 
-		impl #const_trait zutil_inheritance::AsNonNullOf<#fields_name> for #storage_name {
+		#const_trait impl zutil_inheritance::AsNonNullOf<#fields_name> for #storage_name {
 			fn as_non_null_of(this: core::ptr::NonNull<Self>) -> core::ptr::NonNull<#fields_name> {
 				unsafe { this.byte_add(core::mem::offset_of!(#storage_name, fields)) }.cast::<#fields_name>()
 			}
 		}
 
-		unsafe impl #const_trait zutil_inheritance::ReprIs<zutil_inheritance::BaseStorage> for #storage_name
+		#const_trait unsafe impl zutil_inheritance::ReprIs<zutil_inheritance::BaseStorage> for #storage_name
 		where
 			<
 				<#name as zutil_inheritance::Value>::Parent
@@ -397,11 +397,11 @@ fn storage(
 		{}
 
 		#(
-			unsafe impl #const_trait zutil_inheritance::ReprIs<<#parent_tys as zutil_inheritance::Value>::Storage> for #storage_name
+			#const_trait unsafe impl zutil_inheritance::ReprIs<<#parent_tys as zutil_inheritance::Value>::Storage> for #storage_name
 			{}
 		)*
 
-		impl #const_trait zutil_inheritance::StorageFromFields for #storage_name {
+		#const_trait impl zutil_inheritance::StorageFromFields for #storage_name {
 			type Fields = (
 				#fields_name,
 				#( <#parent_tys as zutil_inheritance::Value>::Fields, )*
@@ -493,19 +493,19 @@ fn vtable(
 			methods: #methods_name,
 		}
 
-		impl #const_trait AsRef<#methods_name> for #vtable_name {
+		#const_trait impl AsRef<#methods_name> for #vtable_name {
 			fn as_ref(&self) -> &#methods_name {
 				&self.methods
 			}
 		}
 
-		impl #const_trait zutil_inheritance::AsNonNullOf<#methods_name> for #vtable_name {
+		#const_trait impl zutil_inheritance::AsNonNullOf<#methods_name> for #vtable_name {
 			fn as_non_null_of(this: core::ptr::NonNull<Self>) -> core::ptr::NonNull<#methods_name> {
 				unsafe { this.byte_add(core::mem::offset_of!(#vtable_name, methods)) }.cast::<#methods_name>()
 			}
 		}
 
-		unsafe impl #const_trait zutil_inheritance::ReprIs<zutil_inheritance::BaseVTable> for #vtable_name
+		#const_trait unsafe impl zutil_inheritance::ReprIs<zutil_inheritance::BaseVTable> for #vtable_name
 		where
 			<
 				<#name as zutil_inheritance::Value>::Parent
@@ -514,11 +514,11 @@ fn vtable(
 		{}
 
 		#(
-			unsafe impl #const_trait zutil_inheritance::ReprIs<<#parent_tys as zutil_inheritance::Value>::VTable> for #vtable_name
+			#const_trait unsafe impl zutil_inheritance::ReprIs<<#parent_tys as zutil_inheritance::Value>::VTable> for #vtable_name
 			{}
 		)*
 
-		impl const zutil_inheritance::VTableFromMethods for #vtable_name {
+		const impl zutil_inheritance::VTableFromMethods for #vtable_name {
 			type Methods = (
 				#methods_name,
 				#( <#parent_tys as zutil_inheritance::Value>::Methods, )*

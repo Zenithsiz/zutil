@@ -155,11 +155,11 @@ impl Base {
 }
 
 // SAFETY: A type is always `repr(transparent)` over itself.
-unsafe impl const ReprTransparent for Base {
+const unsafe impl ReprTransparent for Base {
 	type Inner = Self;
 }
 
-impl const Value for Base {
+const impl Value for Base {
 	type Fields = ();
 	type Methods = ();
 	type Parent = Self;
@@ -172,13 +172,13 @@ impl const Value for Base {
 
 impl<T> ValueFor<T> for Base {}
 
-impl const AsRef<Self> for Base {
+const impl AsRef<Self> for Base {
 	fn as_ref(&self) -> &Self {
 		self
 	}
 }
 
-impl const AsNonNullOf<Self> for Base {
+const impl AsNonNullOf<Self> for Base {
 	fn as_non_null_of(this: NonNull<Self>) -> NonNull<Self> {
 		this
 	}

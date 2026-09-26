@@ -8,7 +8,7 @@
 //! from the type.
 
 // Features
-#![feature(async_fn_traits, type_alias_impl_trait, never_type)]
+#![feature(async_fn_traits, type_alias_impl_trait)]
 
 // Modules
 mod load_handle;

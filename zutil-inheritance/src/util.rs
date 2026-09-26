@@ -27,7 +27,7 @@ pub const unsafe trait ReprIs<T>: Sized {
 }
 
 // SAFETY: `T` always contains itself at offset 0
-unsafe impl<T> const ReprIs<T> for T {}
+const unsafe impl<T> ReprIs<T> for T {}
 
 /// Marker trait for types that are `repr(transparent)`.
 ///
@@ -85,7 +85,7 @@ macro_rules! ReprTransparent {
 		#[repr(transparent)]
 		$v:vis struct $Ty:ident($Inner:ty);
 	) => {
-		unsafe impl const zutil_inheritance::ReprTransparent for $Ty {
+		const unsafe impl zutil_inheritance::ReprTransparent for $Ty {
 			type Inner = $Inner;
 		}
 	}

@@ -26,7 +26,7 @@ impl BaseStorage {
 /// This impl just calls [`Self::new`]. It is intended
 /// to be used when cloning a whole storage to create
 /// a new object
-impl const Clone for BaseStorage {
+const impl Clone for BaseStorage {
 	fn clone(&self) -> Self {
 		Self::new()
 	}
@@ -38,19 +38,19 @@ impl Default for BaseStorage {
 	}
 }
 
-impl const AsRef<()> for BaseStorage {
+const impl AsRef<()> for BaseStorage {
 	fn as_ref(&self) -> &() {
 		&()
 	}
 }
 
-impl const AsNonNullOf<()> for BaseStorage {
+const impl AsNonNullOf<()> for BaseStorage {
 	fn as_non_null_of(this: NonNull<Self>) -> NonNull<()> {
 		this.cast()
 	}
 }
 
-impl const StorageFromFields for BaseStorage {
+const impl StorageFromFields for BaseStorage {
 	type Fields = ();
 
 	fn from_fields(base: BaseStorage, _fields: Self::Fields) -> Self {

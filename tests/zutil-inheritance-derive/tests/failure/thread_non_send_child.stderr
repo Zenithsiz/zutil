@@ -6,22 +6,39 @@ error[E0277]: `RefCell<u32>` cannot be shared between threads safely
    |
    = help: within `BStorage`, the trait `Sync` is not implemented for `RefCell<u32>`
    = note: if you want to do aliasing and mutation between multiple threads, use `std::sync::RwLock` instead
-help: the trait `ValueFor<T>` is implemented for `A`
+help: the trait `ValueFor<T>` is conditionally implemented for `A`
   --> tests/failure/thread_non_send_child.rs:16:1
    |
-16 | / zutil_inheritance::value! {
-17 | |     struct A(): Send + Sync {
-   | |____________^
+16 | // zutil_inheritance::value! {
+17 | ||     struct A(): Send + Sync {
+   | ||____________^
+18 | |      }
+19 | |      impl Self {}
+20 | |  }
+   | |  -
+   | |  |
+   | |__unsatisfied requirement introduced here: `_: Send`
+   |    unsatisfied requirement introduced here: `_: Sync`
 note: required because it appears within the type `BFields`
   --> tests/failure/thread_non_send_child.rs:23:9
    |
-23 |     struct B(A): Send + Sync {
-   |            ^
+22 | / zutil_inheritance::value! {
+23 | |     struct B(A): Send + Sync {
+   | |            ^
+24 | |         a: RefCell<u32>,
+...  |
+27 | | }
+   | |_- required by this field
 note: required because it appears within the type `BStorage`
   --> tests/failure/thread_non_send_child.rs:23:9
    |
-23 |     struct B(A): Send + Sync {
-   |            ^
+22 | / zutil_inheritance::value! {
+23 | |     struct B(A): Send + Sync {
+   | |            ^
+24 | |         a: RefCell<u32>,
+...  |
+27 | | }
+   | |_- required by this field
 note: required for `B` to implement `Send`
   --> tests/failure/thread_non_send_child.rs:22:1
    |
@@ -45,6 +62,8 @@ note: required for `A` to implement `ValueFor<B>`
 note: required by a bound in `zutil_inheritance::Value::Parent`
   --> $WORKSPACE/zutil-inheritance/src/value.rs
    |
+   | pub const trait Value: [const] ReprTransparent<Inner = Base> + Sized + 'static {
+...
    |     type Parent: ValueFor<Self>;
    |                  ^^^^^^^^^^^^^^ required by this bound in `Value::Parent`
    = note: this error originates in the macro `zutil_inheritance::value` (in Nightly builds, run with -Z macro-backtrace for more info)

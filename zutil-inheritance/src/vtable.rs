@@ -54,19 +54,19 @@ impl BaseVTable {
 	}
 }
 
-impl const AsRef<()> for BaseVTable {
+const impl AsRef<()> for BaseVTable {
 	fn as_ref(&self) -> &() {
 		&()
 	}
 }
 
-impl const AsNonNullOf<()> for BaseVTable {
+const impl AsNonNullOf<()> for BaseVTable {
 	fn as_non_null_of(this: NonNull<Self>) -> NonNull<()> {
 		this.cast()
 	}
 }
 
-impl const VTableFromMethods for BaseVTable {
+const impl VTableFromMethods for BaseVTable {
 	type Methods = ();
 
 	fn from_methods(base: BaseVTable, _methods: Self::Methods) -> Self {

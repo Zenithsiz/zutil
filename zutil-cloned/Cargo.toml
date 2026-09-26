@@ -4,7 +4,6 @@ version     = "0.1.0"
 description = "`#[cloned]` macro for cloning expressions"
 edition     = { workspace = true }
 authors     = { workspace = true }
-homepage    = { workspace = true }
 license     = { workspace = true }
 repository  = { workspace = true }
 
