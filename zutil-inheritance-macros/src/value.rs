@@ -420,6 +420,7 @@ fn storage(
 	}
 }
 
+#[expect(clippy::too_many_lines, reason = "TODO")]
 fn vtable(
 	input: &Input,
 	first_parent_ty: &syn::Type,
@@ -442,10 +443,18 @@ fn vtable(
 
 		let first_arg = syn::parse_quote! { &#name };
 		let mut args = Punctuated::<_, syn::Token![,]>::new();
-		args.push(&first_arg);
+		args.push(first_arg);
 		args.extend(f.sig.inputs.iter().skip(1).map(|arg| match arg {
-			syn::FnArg::Receiver(receiver) => &receiver.ty,
-			syn::FnArg::Typed(pat_type) => &*pat_type.ty,
+			syn::FnArg::Receiver(receiver) => match &receiver.kind {
+				syn::ReceiverKind::Value => syn::parse_quote! { #name },
+				syn::ReceiverKind::Reference(.., mut_) => match mut_ {
+					Some(_) => syn::parse_quote! { &mut #name },
+					None => syn::parse_quote! { &#name },
+				},
+				syn::ReceiverKind::Typed(_, ty) => (**ty).clone(),
+				_ => todo!(),
+			},
+			syn::FnArg::Typed(pat_type) => (*pat_type.ty).clone(),
 		}));
 
 		let ret_ty = &f.sig.output;
