@@ -32,6 +32,12 @@ pub struct LoggerBuilder<W, S> {
 
 	/// Filter filters
 	file_filters: HashMap<Option<String>, String>,
+
+	/// Whether we should initialize the file writer.
+	///
+	/// If the user isn't going to write to a file, we
+	/// don't need to initialize it at all.
+	init_file_writer: bool,
 }
 
 impl LoggerBuilder<fn() -> io::Stderr, LoggerSubscriber> {
@@ -47,6 +53,7 @@ impl LoggerBuilder<fn() -> io::Stderr, LoggerSubscriber> {
 			subscriber: LoggerSubscriber::default(),
 			stderr_filters: [(None, "info".to_owned())].into(),
 			file_filters: [(None, "debug".to_owned())].into(),
+			init_file_writer: true,
 		}
 	}
 }
@@ -103,6 +110,13 @@ impl<W, S> LoggerBuilder<W, S> {
 		self.stderr_filter(key, filter).file_filter(key, filter)
 	}
 
+	/// Disables the file writer for this logger.
+	#[must_use]
+	pub const fn no_file_writer(mut self) -> Self {
+		self.init_file_writer = false;
+		self
+	}
+
 	/// Builds the logger
 	#[must_use]
 	pub fn build(self) -> Logger
@@ -111,7 +125,10 @@ impl<W, S> LoggerBuilder<W, S> {
 		S: Subscriber + for<'a> LookupSpan<'a> + Send + Sync + 'static,
 	{
 		// Then initialize our logging
-		let file_writer = FileWriter::memory();
+		let file_writer = match self.init_file_writer {
+			true => FileWriter::memory(),
+			false => FileWriter::none(),
+		};
 
 		// Note: Due to [this issue](https://github.com/tokio-rs/tracing/issues/1817),
 		//       the order here matters, and the stderr ones must be last.
@@ -125,7 +142,12 @@ impl<W, S> LoggerBuilder<W, S> {
 		// Finally write the pre-init output to our writes
 		if let Err(err) = self.pre_init_logger.into_output().with_bytes(|bytes| {
 			self.stderr.make_writer().write_all(bytes)?;
-			file_writer.make_writer().write_all(bytes)
+
+			if self.init_file_writer {
+				file_writer.make_writer().write_all(bytes)?;
+			}
+
+			Ok::<_, io::Error>(())
 		}) {
 			tracing::warn!("Unable to write pre-init output: {err:?}");
 		}

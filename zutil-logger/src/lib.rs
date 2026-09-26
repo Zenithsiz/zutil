@@ -44,6 +44,12 @@ impl Logger {
 		Self::builder().build()
 	}
 
+	/// Creates a stderr-only logger
+	#[must_use]
+	pub fn stderr() -> Self {
+		Self::builder().no_file_writer().build()
+	}
+
 	/// Creates a builder for the logger
 	#[must_use]
 	pub fn builder() -> LoggerBuilder<fn() -> io::Stderr, LoggerSubscriber> {
@@ -52,8 +58,13 @@ impl Logger {
 
 	/// Sets a file to log into.
 	///
-	/// Once the logger is finished, any logs produced until then
-	/// will be retro-actively written into this log file.
+	/// All logs emitted until now will be written to the file, if you
+	/// pass in `Some(..)`. If you pass in `None`, then this logger will
+	/// stop saving the logs emitted.
+	///
+	/// If you created the logger with [`Logger::stderr`], then this
+	/// method won't retroactively write all logs emitted, but will
+	/// write new ones.
 	pub fn set_file(&self, path: Option<&Path>) {
 		match path {
 			Some(path) => match fs::File::create(path) {

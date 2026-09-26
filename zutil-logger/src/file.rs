@@ -28,6 +28,13 @@ impl FileWriter {
 		}
 	}
 
+	/// Creates a new file writer with no output
+	pub fn none() -> Self {
+		Self {
+			kind: Arc::new(Mutex::new(FileWriterKind::None)),
+		}
+	}
+
 	/// Sets this file writer to write into a file.
 	///
 	/// If this was writing into memory, writes all captured
